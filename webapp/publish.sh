@@ -1,5 +1,7 @@
 #!/bin/sh
 
+. common.sh
+
 [ -d ./publish ] && rm -rf ./publish/* || mkdir ./publish
 mkdir ./publish/{server,static}
 
@@ -15,5 +17,5 @@ cd ./core
 	dotnet build --configuration Release
 cd ..
 
-cp -rf ./core/bin/Release/netcoreapp3.1/* ./publish/server
+cp -rf ./core/${DOTNET_REL_DIR}/* ./publish/server
 
