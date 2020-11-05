@@ -1,0 +1,17 @@
+[Unit]
+Description=UoM Tutorial Group W6 Web Application
+After=systemd-networkd.target
+
+[Service]
+WorkingDirectory=/var/www/tut-comp10120/server
+ExecStart=/usr/bin/dotnet /var/www/tut-comp10120/server/core.dll
+Restart=always
+RestartSec=10
+KillSignal=SIGINT
+SyslogIdentifier=tut-comp10120
+User=www-data
+Environment=ASPNETCORE_ENVIRONMENT=Production
+Environment=DOTNET_PRINT_TELEMETRY_MESSAGE=false
+
+[Install]
+WantedBy=multi-user.target

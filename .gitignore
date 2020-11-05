@@ -1,1 +1,4 @@
-out/**
+## user-specific files & folders
+DS_Store
+.vs/
+.vscode/
