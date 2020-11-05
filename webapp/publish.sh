@@ -1,6 +1,6 @@
 #!/bin/sh
 
-. common.sh
+source ./common.sh
 
 [ -d ./publish ] && rm -rf ./publish/* || mkdir ./publish
 mkdir ./publish/{server,static}
