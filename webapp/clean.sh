@@ -1,5 +1,4 @@
 #!/bin/sh
 
-echo "Cleaning all files under ./static/"
+rm -rf ./publish/*
 rm -rf ./static/*
-

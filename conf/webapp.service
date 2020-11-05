@@ -1,14 +1,14 @@
 [Unit]
-Description=UoM Tutorial Group W6 Web Application
+Description=Template Webapp using ASP.Net Core and Vue.js
 After=systemd-networkd.target
 
 [Service]
-WorkingDirectory=/var/www/tut-comp10120/server
-ExecStart=/usr/bin/dotnet /var/www/tut-comp10120/server/core.dll
+WorkingDirectory=/var/www/w6-comp10120
+ExecStart=/usr/bin/dotnet /var/www/w6-comp10120/server/core.dll
 Restart=always
 RestartSec=10
 KillSignal=SIGINT
-SyslogIdentifier=tut-comp10120
+SyslogIdentifier=w6-comp10120
 User=www-data
 Environment=ASPNETCORE_ENVIRONMENT=Production
 Environment=DOTNET_PRINT_TELEMETRY_MESSAGE=false
