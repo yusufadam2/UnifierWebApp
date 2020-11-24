@@ -4,6 +4,6 @@ DS_Store
 .vscode/
 
 ## python files
-./env/
-./__pycache__/
+env/
+__pycache__/
 
