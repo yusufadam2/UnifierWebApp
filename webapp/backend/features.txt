@@ -1,0 +1,28 @@
+1) People register a profile
+      1.1) When registering need to provide
+      - Username (unique)
+      - Email (validated)
+      - Password (strong)
+
+      1.2) Profile includes
+      - Username (hidden?)
+      - Profile Picture (optional)
+      - Name
+      - Age
+      - Gender
+      - Description / Bio
+      - Interests
+
+      1.3) Profile can have all fields (except for username) edited
+
+2) People can see a friends list based on past matches
+      2.1) Can remove from friends list (block a previous match)
+
+3) People match based on interests / by entering another persons username
+
+4) Matched people can start a dm with one another
+      4.1) DM history is preserved, so stored on server (and on client?)
+
+5) Extension: matched people can start a voice / video call with one another
+
+6) Extension: Group DMs with multiple people
