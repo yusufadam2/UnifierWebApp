@@ -1,10 +1,7 @@
 #!/bin/sh
 
-source ./common.sh
-
 [ -d ./publish ] && rm -rf ./publish/* || mkdir ./publish
-mkdir ./publish/{server,static}
-
+mkdir ./publish/server ./publish/static
 
 cd ./frontend
 	npm run build
@@ -12,10 +9,7 @@ cd ..
 
 cp -rf ./static/* ./publish/static
 
+cp -rf ./backend/* ./publish/server
 
-cd ./core
-	dotnet build --configuration Release
-cd ..
-
-cp -rf ./core/${DOTNET_REL_DIR}/* ./publish/server
+cp run.sh ./publish/server
 
