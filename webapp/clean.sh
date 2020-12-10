@@ -1,4 +1,5 @@
 #!/bin/sh
 
-rm -rf ./publish/*
-rm -rf ./static/*
+rm -rf ./backend/__pycache__
+rm -rf ./publish
+rm -rf ./static

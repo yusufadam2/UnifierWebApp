@@ -5,7 +5,7 @@ cd ./frontend
 cd ..
 
 cd ./backend
-	. env/bin/activate
+	. ../env/bin/activate
 	
 	export FLASK_APP='main.py'
 	export FLASK_ENV='development'
