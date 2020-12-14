@@ -1,0 +1,88 @@
+body,hr,html {
+  height: 100%;
+  margin: 0!important;
+  padding: 0!important
+}
+
+h1,h2,h3,h4,h5,h6 {
+  line-height: 1.2;
+  text-align: center
+}
+
+hr {
+  display: block;
+  height: 1px;
+  border: 0;
+  border-top: 1px solid;
+  border-color: inherit
+}
+
+:root {
+  --theme-dark-bg: #32424b;
+  --theme-dark-fg: #799788;
+  --theme-dark-text: #eeeeee;
+  --theme-dark-link: #65cbb6;
+  --theme-dark-link-visited: #65cbb6;
+  /*--theme-dark-link-visited: #799788;*/
+  --theme-dark-h1: #65cbb6;
+  --theme-dark-h2: #fbf0c1;
+  --theme-dark-h3: #d86853;
+  --theme-dark-heading: green;
+
+  --theme-bg: var(--theme-dark-bg);
+  --theme-fg: var(--theme-dark-fg);
+  --theme-text: var(--theme-dark-text);
+  --theme-link: var(--theme-dark-link);
+  --theme-link-visited: var(--theme-dark-link-visited);
+  --theme-h1: var(--theme-dark-h1);
+  --theme-h2: var(--theme-dark-h2);
+  --theme-h3: var(--theme-dark-h3);
+  --theme-heading: var(--theme-dark-heading);
+}
+
+nav {
+  background: var(--theme-bg);
+}
+
+a {
+  color: var(--theme-link);
+}
+
+a:visited {
+  color: var(--theme-link-visited);
+}
+
+h1 {
+  color: var(--theme-h1);
+}
+
+h2 {
+  color: var(--theme-h2);
+}
+
+h3 {
+  color: var(--theme-h3);
+}
+
+h4,h5,h6 {
+  color: var(--theme-heading);
+}
+
+body {
+  background: var(--theme-bg);
+  color: var(--theme-text);
+  font: 1em/1.62 monospace,'Lucida Console',Monaco,monospace;
+  min-height: 100%;
+  transition: color .2s,background-color .2s
+}
+
+.navbar {
+  overflow: hidden;
+  position: fixed;
+  top: 0;
+  width: 100%
+}
+
+.text-break {
+  word-wrap: break-word
+}

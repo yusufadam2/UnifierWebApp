@@ -1,7 +1,8 @@
 #!/bin/sh
 
 cd ./frontend
-	npm run build
+	#npm run build
+	./compile.sh
 cd ..
 
 cd ./backend

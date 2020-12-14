@@ -6,7 +6,8 @@
 mkdir ./publish ./publish/server ./publish/static
 
 cd ./frontend
-	npm run build
+	#npm run build
+	./compile.sh
 cd ..
 
 cp -rf ./static/* ./publish/static
