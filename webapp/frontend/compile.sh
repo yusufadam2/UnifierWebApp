@@ -16,12 +16,13 @@ FOR_FILES () {
         local GLOB="${3}"
         local FUNC="${4}"
 
-        pushd "${SRC}" >/dev/null
+	local OLD="$(pwd)"
+	cd "${SRC}"
         find -name "${GLOB}" -type f -print0 | while read -d $'\0' FILE; do
                 mkdir -p $(dirname "${DST}/${FILE}") && \
                         "${FUNC}" "${FILE}" "${DST}/${FILE}"
         done
-        popd >/dev/null
+        cd "${OLD}"
 }
 
 ## $1 : Template file
