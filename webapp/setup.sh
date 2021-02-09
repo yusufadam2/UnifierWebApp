@@ -4,6 +4,6 @@
 
 . env/bin/activate
 
-pip install -r requirements.txt --user
+pip3 install -r requirements.txt --user
 
 deactivate
