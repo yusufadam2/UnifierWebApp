@@ -80,7 +80,9 @@ body {
   overflow: hidden;
   position: fixed;
   top: 0;
-  width: 100%
+  width: 100%;
+
+  font: 1em/1.62 monospace,'Lucida Console',Monaco,monospace;
 }
 
 .text-break {

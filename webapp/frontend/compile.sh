@@ -76,6 +76,7 @@ COLLAPSE_STRICT () {
 FOR_FILES "${ROOT}/html" "${OUT}" "*.html" TEMPLATE_LAYOUT
 FOR_FILES "${ROOT}/css" "${OUT}/css" "*.css" cp
 FOR_FILES "${ROOT}/js" "${OUT}/js" "*.js" cp
+#FOR_FILES "${ROOT}/lib" "${OUT}/lib" "*" cp
 FOR_FILES "${ROOT}/public" "${OUT}" "*" cp
 
 #FOR_FILES "${OUT}" "${OUT}" "*.html" COLLAPSE_MILD
