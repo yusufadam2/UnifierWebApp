@@ -1,0 +1,86 @@
+__all__ = ['DB', 'NAME_LEN', 'DESC_LEN', 'HASH_LEN', 'PATH_LEN', 'do_sql']
+
+import sqlite3 as sql
+
+
+DB = 'w6-comp10120.db'
+NAME_LEN = 100
+DESC_LEN = 4096
+HASH_LEN = 512
+PATH_LEN = 256
+
+
+def do_sql(cur, query, parameters=None):
+    try:
+        if parameters is not None:
+            cur.execute(query, parameters)
+        else:
+            cur.execute(query)
+    except sql.OperationalError as err:
+        print(err)
+
+
+def main():
+    conn = sql.connect(DB)
+    cur = conn.cursor()
+
+    do_sql(cur, '''DROP TABLE UserAuth''')
+    do_sql(cur, '''CREATE TABLE UserAuth(
+        id INTEGER UNIQUE NOT NULL PRIMARY KEY,
+        username VARCHAR(100) UNIQUE NOT NULL,
+        email VARCHAR(100) UNIQUE NOT NULL,
+        hash VARCHAR(512) UNIQUE NOT NULL,
+        salt VARCHAR(512) UNIQUE NOT NULL,
+        iter INTEGER NOT NULL,
+        userId INTEGER UNIQUE NOT NULL,
+        FOREIGN KEY(userId) REFERENCES Users(id));''')
+
+    do_sql(cur, '''DROP TABLE Users''')
+    do_sql(cur, '''CREATE TABLE Users(
+        id INTEGER UNIQUE NOT NULL PRIMARY KEY,
+        name VARCHAR(100) NOT NULL,
+        dob DATE NOT NULL,
+        gender VARCHAR(100) NOT NULL,
+        bio VARCHAR(4096),
+        pictureId INTEGER NOT NULL,
+        FOREIGN KEY(pictureId) REFERENCES UserPictures(id));''')
+
+    do_sql(cur, '''DROP TABLE UserPictures''')
+    do_sql(cur, '''CREATE TABLE UserPictures(
+        id INTEGER UNIQUE NOT NULL PRIMARY KEY,
+        data BLOB NOT NULL);''')
+
+    do_sql(cur, '''DROP TABLE Interests''')
+    do_sql(cur, '''CREATE TABLE Interests(
+        id INTEGER UNIQUE NOT NULL PRIMARY KEY,
+        name VARCHAR(100) UNIQUE NOT NULL);''')
+
+    do_sql(cur, '''DROP TABLE UsersInterestsJoins''')
+    do_sql(cur, '''CREATE TABLE UsersInterestsJoins(
+        id INTEGER UNIQUE NOT NULL PRIMARY KEY,
+        userId INTEGER NOT NULL,
+        interestId INTEGER NOT NULL,
+        FOREIGN KEY(userId) REFERENCES Users(id),
+        FOREIGN KEY(interestId) REFERENCES Interests(id));''')
+
+    do_sql(cur, '''DROP TABLE Conversations''')
+    do_sql(cur, '''CREATE TABLE Conversations(
+        id INTEGER UNIQUE NOT NULL PRIMARY KEY,
+        fpath VARCHAR(256) UNIQUE NOT NULL);''')
+
+    do_sql(cur, '''DROP TABLE UsersConversationsJoin''')
+    do_sql(cur, '''CREATE TABLE UsersConversationsJoin(
+        id INTEGER UNIQUE NOT NULL PRIMARY KEY,
+        userId INTEGER NOT NULL,
+        conversationId INTEGER NOT NULL,
+        FOREIGN KEY(userId) REFERENCES Users(id),
+        FOREIGN KEY(conversationId) REFERENCES Conversations(id));''')
+
+    conn.commit()
+    conn.close()
+
+
+if __name__ == '__main__':
+    print('Hello World!')
+    main()
+
