@@ -8,3 +8,5 @@ DS_Store
 env/
 __pycache__/
 
+## data files
+w6-comp10120.db

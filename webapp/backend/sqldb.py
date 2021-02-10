@@ -2,6 +2,12 @@ __all__ = ['DB', 'NAME_LEN', 'DESC_LEN', 'HASH_LEN', 'PATH_LEN', 'do_sql']
 
 import sqlite3 as sql
 
+## TODO:
+## - Read from db tables (SELECT ...)
+## - Create new db table entries (INSERT ...)
+## - Update db table entries (UPDATE ...)
+## - Relational queries across db tables
+
 
 DB = 'w6-comp10120.db'
 NAME_LEN = 100
@@ -20,7 +26,7 @@ def do_sql(cur, query, parameters=None):
         print(err)
 
 
-def main():
+def create():
     conn = sql.connect(DB)
     cur = conn.cursor()
 
@@ -82,5 +88,5 @@ def main():
 
 if __name__ == '__main__':
     print('Hello World!')
-    main()
+    create()
 
