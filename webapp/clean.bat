@@ -1,7 +1,7 @@
 @echo off
 
 cd frontend
-	clean.bat
+	call clean.bat
 cd ..
 
 rmdir /S/Q backend/__pycache__

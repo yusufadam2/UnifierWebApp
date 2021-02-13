@@ -2,4 +2,4 @@
 
 rmdir /S/Q __pycache__
 rmdir /S/Q tmp
-rmdir /S/Q ../static
+rmdir /S/Q ..\static

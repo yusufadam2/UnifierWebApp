@@ -1,11 +1,11 @@
 @echo off
 
 cd ./frontend
-	compile.bat
+	call compile.bat
 cd ..
 
 cd ./backend
-	../env/bin/activate.bat
+	call ../env/Scripts/activate.bat
 
 	SET FLASK_APP=main.py
 	SET FLASK_ENV=development

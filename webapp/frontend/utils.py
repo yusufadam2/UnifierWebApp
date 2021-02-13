@@ -2,7 +2,7 @@ from os.path import abspath
 
 
 def ABS(root, path):
-    return abspath(root + path)
+    return abspath(f'{root}/{path}')
 
 
 def READ(fpath):

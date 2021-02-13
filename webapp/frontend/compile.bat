@@ -1,25 +1,25 @@
 @echo off
 
-clean.bat
+rmdir /S/Q __pycache__
+rmdir /S/Q tmp
+rmdir /S/Q ..\static
 
-mkdir tmp ../static
+mkdir tmp
+mkdir ..\static
 
-../env/bin/activate.bat
+mkdir tmp\html
+mkdir ..\static\html
 
-mkdir tmp/html ../static/html
+..\env\Scripts\python.exe build.py .\html\ .\layouts\ .\tmp\ ..\static\
 
-python build.py html/ layouts/ tmp/ ../static/
+mkdir ..\static\lib
+mkdir ..\static\css
+mkdir ..\static\js
 
-deactivate
+xcopy lib\* ..\static\lib
+xcopy css\* ..\static\css
+xcopy js\* ..\static\js
 
-mkdir ../static/lib
-mkdir ../static/css
-mkdir ../static/js
+xcopy public\* ..\static
 
-cp lib/* ../static/lib
-cp css/* ../static/css
-cp js/* ../static/js
-
-cp public/* ../static
-
-rmdir /S/Q ../static/layouts
+rmdir /S/Q ..\static\layouts

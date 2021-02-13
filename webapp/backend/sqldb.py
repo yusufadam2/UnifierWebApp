@@ -1,6 +1,13 @@
+"""
+This module provides a helper function for executing sql queries.
+"""
+
 __all__ = ['DB', 'NAME_LEN', 'DESC_LEN', 'HASH_LEN', 'PATH_LEN', 'do_sql']
 
+import enum
 import sqlite3 as sql
+
+from typing import List, Optional, Tuple
 
 ## TODO:
 ## - Read from db tables (SELECT ...)
@@ -16,17 +23,24 @@ HASH_LEN = 512
 PATH_LEN = 256
 
 
-def do_sql(cur, query, parameters=None):
+def do_sql(cur: sql.Cursor, query: str, parameters: Tuple = None) -> Optional:
+    """
+    Executes the given sql query (with the given parameters; use ? in 
+    place of the actual parameter value) using the given cursor object.
+    """
     try:
         if parameters is not None:
             cur.execute(query, parameters)
         else:
             cur.execute(query)
+
+        return cur.fetchall()
+
     except sql.OperationalError as err:
-        print(err)
+        return None
 
 
-def create():
+def bootstrap():
     conn = sql.connect(DB)
     cur = conn.cursor()
 
@@ -88,5 +102,5 @@ def create():
 
 if __name__ == '__main__':
     print('Hello World!')
-    create()
+    bootstrap()
 
