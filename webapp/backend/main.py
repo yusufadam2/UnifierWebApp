@@ -11,12 +11,6 @@ app.secret_key = 'W6-COMP10120'
 app.token_key = 'csrf_token'
 
 
-conn = sqldb.try_open_conn()
-assert conn is not None  # we can't open a connection to the database
-
-cur = conn.cursor()  # this cursor allows us to execute sql queries
-
-
 @app.route('/')
 def main():
     return app.send_static_file('index.html')
@@ -29,20 +23,36 @@ def test():
 
 
 # TODO(mikolaj): implement csrf protection
-@app.route('/register/', methods=['POST'])
+@app.route('/register', methods=['POST'])
 def register():
-    email = request.args['email']
-    username = request.args['user']
-    password = request.args['pass']
+    conn = sqldb.try_open_conn()
+    assert conn is not None
+    cur = conn.cursor()
+
+    email = request.values.get('email', None)
+    username = request.values.get('username', None)
+    password = request.values.get('password', None)
+
+    if email is None or username is None or password is None:
+        return app.response_class(status=400)
+
+    print(f'Registering user: {username} ({email}) with password {password}')
 
     return app.response_class(status=200)
 
 
 # TODO(mikolaj): implement csrf protection
-@app.route('/login/', methods=['POST'])
+@app.route('/login', methods=['POST'])
 def login():
-    username = request.args['user']
-    password = request.args['pass']
+    conn = sqldb.try_open_conn()
+    assert conn is not None
+    cur = conn.cursor()
+
+    username = request.values.get('username', None)
+    password = request.values.get('password', None)
+
+    if username is None or password is None:
+        return app.response_class(status=400)
 
     query = 'SELECT userId, hash, salt FROM UserAuth WHERE username LIKE ?'
     parameters = (username,)
@@ -54,13 +64,20 @@ def login():
 
             return app.response_class(status=200)
 
-    return app.response_class(status=401)
+    return app.response_class(status=400)
 
 
 # TODO(mikolaj): implement csrf protection
-@app.route('/logout/', methods=['POST'])
+@app.route('/logout', methods=['POST'])
 def logout():
-    uid = request.args['uid']
+    conn = sqldb.try_open_conn()
+    assert conn is not None
+    cur = conn.cursor()
+
+    uid = request.values.get('uid', None)
+
+    if uid is None:
+        return app.response_class(status=400)
 
     print(f'[user-{uid}] Logged out!')
 

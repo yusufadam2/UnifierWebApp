@@ -1,8 +1,6 @@
 function ASSERT(condition, message) {
-  const udef = undefined;
   if (condition == false) {
-    console.log(`!!!! ASSERTION FAILED: ${message} !!!!`);
-    udef(42); // some code that is guaranteed to fail
+    console.error(`!!!! ASSERTION FAILED: ${message} !!!!`);
   }
 }
 
@@ -40,8 +38,7 @@ document.addEventListener('DOMContentLoaded', function(e) {
   // init logic
   function refreshLoginStateView() {
     const cookieKey = LOGIN_STATE_COOKIE;
-    let [readLoginState, loginState] = tryGetCookie(cookieKey);
-    console.log(`Read login state cookie: ${cookieKey}=${loginState}`);
+    const [readLoginState, loginState] = tryGetCookie(cookieKey);
 
     const loginModalLink = document.getElementById(LOGIN_MODAL_LINK);
     const logoutModalLink = document.getElementById(LOGOUT_MODAL_LINK);
@@ -91,13 +88,22 @@ document.addEventListener('DOMContentLoaded', function(e) {
   ASSERT(loginSubmitLink !== null, `No login link with id ${LOGIN_SUBMIT_LINK}`);
 
   loginSubmitLink.onclick = function(e) {
-    const cookieKey = LOGIN_STATE_COOKIE;
-    let [didWrite, writtenValue] = trySetCookie(cookieKey, 'true');
-    ASSERT(didWrite && writtenValue === 'true', `Could not set cookie`);
-    console.log(`Wrote cookie: ${cookieKey}=${writtenValue}`);
+    const loginRequestHeaders = [];
+    const loginRequestBody = new FormData(document.forms.loginForm);
 
-    // TODO update state
-    refreshLoginStateView();
+    const onLoginSuccess = function(xhr, xhrResponse, xhrResponseType) {
+      const cookieKey = LOGIN_STATE_COOKIE;
+      const [didWrite, writtenValue] = trySetCookie(cookieKey, 'true');
+      ASSERT(didWrite && writtenValue === 'true', `Could not set cookie`);
+
+      refreshLoginStateView();
+    };
+
+    const onLoginFailure = function(xhr, xhrStatus) {
+      refreshLoginStateView();
+    };
+
+    REST('/login', 'POST', true, 0, loginRequestHeaders, loginRequestBody, onLoginSuccess, onLoginFailure);
   };
 
   const logoutSubmitLink = document.getElementById(LOGOUT_SUBMIT_LINK);
@@ -105,9 +111,8 @@ document.addEventListener('DOMContentLoaded', function(e) {
 
   logoutSubmitLink.onclick = function(e) {
     const cookieKey = LOGIN_STATE_COOKIE;
-    let [didWrite, writtenValue] = trySetCookie(cookieKey, 'false');
+    const [didWrite, writtenValue] = trySetCookie(cookieKey, 'false');
     ASSERT(didWrite && writtenValue === 'false', `Could not set cookie`);
-    console.log(`Wrote cookie: ${cookieKey}=${writtenValue}`);
 
     // TODO update state
     refreshLoginStateView();

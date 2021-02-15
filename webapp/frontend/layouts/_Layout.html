@@ -21,6 +21,9 @@
         <link href="/css/modal.css" rel="preload" as="style" />
         <link href="/css/modal.css" rel="stylesheet" />
 
+        <link href="/js/REST.js" rel="preload" as="script" />
+        <script src="/js/REST.js"></script>
+
         <link href="/js/script.js" rel="preload" as="script" />
         <script src="/js/script.js"></script>
 
@@ -50,7 +53,7 @@
                     <h3>Login</h3>
                 </div>
                 <div class="modal-body">
-                    <div>
+                    <form name="loginForm">
                         <div>
                             <!-- Column 1 -->
                             <!-- Logo goes here -->
@@ -61,7 +64,7 @@
                             <input
                                 type="text"
                                 id="loginUsername"
-                                name="loginUsername"
+                                name="username"
                                 placeholder="Username goes here..."
                                 class="stretch"
                             /><br />
@@ -74,7 +77,7 @@
                             <input
                                 type="password"
                                 id="loginPassword"
-                                name="loginPassword"
+                                name="password"
                                 placeholder="Password goes here..."
                                 class="stretch"
                             /><br />
@@ -85,7 +88,7 @@
                         <br /><hr />
                         <div class="center-text">
                             <input
-                                type="submit"
+                                type="button"
                                 id="loginSubmitLink"
                                 value="Login"
                                 class="stretch"
@@ -94,7 +97,7 @@
                                 <small>New? Sign up!</small>
                             </a>
                         </div>
-                    </div>
+                    </form>
                 </div>
                 <!--<div class="modal-footer"></div>-->
             </div>
@@ -105,12 +108,16 @@
                     <h3>Logout</h3>
                 </div>
                 <div class="modal-body">
-                    <input
-                        type="submit"
-                        id="logoutSubmitLink"
-                        value="Logout"
-                        class="stretch"
-                    />
+                    <form name="logoutForm">
+                        <div>
+                            <input
+                                type="button"
+                                id="logoutSubmitLink"
+                                value="Logout"
+                                class="stretch"
+                            />
+                        </div>
+                    </form>
                 </div>
                 <!--<div class="modal-footer"></div>-->
             </div>
