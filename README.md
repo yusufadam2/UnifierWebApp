@@ -52,6 +52,9 @@ Max 73 character short overview of changes, followed by a newline
 A more in-depth overview of changes, with reasons for broad additions 
 and changes listed in the following format:
 + reason for adding feature X
+  + reason for adding subfeature X.1
+  ~ reason for reworking/updating subfeature X.2
+  - reason for removing feature X.3
 ~ reason for reworking/updating feature Y
 - reason for removing feature Z
 ```
