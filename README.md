@@ -42,7 +42,8 @@ to ensure no changes are left behind.
 
 NOTE2: The first time you push to the branch, no "remote branch" will have been 
 created. Git might complain. To fix this, replace `git push` with `git push -u 
-origin <name-of-branch>`.
+origin <name-of-branch>`. Any pushes after this must be done without the extra 
+parameters.
 
 #### Commit Messages
 Commit messages should be of the following format:
