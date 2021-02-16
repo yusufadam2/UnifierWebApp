@@ -1,5 +1,5 @@
 ## user-specific files & folders
-DS_Store
+.DS_Store
 .vs/
 .vscode/
 .gitconfig

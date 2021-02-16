@@ -1,23 +1,41 @@
 <style>
 
 .dashboard {
-    display: flex;
-
-    align-content: stretch;
-
-    width: 100%;
+	display: flex;
+	align-content: stretch;
+	width: 100%;
 }
 
 .dashboard-elem {
-    flex: 1 0 0;
+	flex: 1 0 0;
+	text-align: center;
+}
+
+.border-right {
+	border-right: 1px solid #fbf0c1;
 }
 
 </style>
+
 <div>
-    <h1>Dashboard</h1>
-    <div class="dashboard">
-        <div class="float-left dashboard-elem">Left</div>
-        <div class="dashboard-elem">Centre</div>
-        <div class="float-right dashboard-elem">Right</div>
-    </div>
+	<h1>Dashboard</h1>
+	<div class="dashboard">
+		<div class="float-left border-right dashboard-elem">
+			<h2>Profile</h2>
+			<hr>
+			<p>(Profile Picture)</p>
+			<p>Description:</p>
+			<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum</p>
+		</div>
+		<div class="border-right dashboard-elem">
+			<h2>Messages</h2>
+			<hr>
+			<p style="text-align: center;">You have 0 messages available.</p>
+		</div>
+		<div class="float-right dashboard-elem">
+			<h2>Friends</h2>
+			<hr>
+			<p>You have no friends. Try and add someone.</p>
+		</div>
+	</div>
 </div>

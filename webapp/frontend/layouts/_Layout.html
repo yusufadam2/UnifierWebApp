@@ -32,20 +32,17 @@
     </head>
     <body>
         <header>
-            <div class="navbar" style="padding: 0; margin: 0;">
-                <nav style="display: flex; justify-content: space-between;">
-                    <div style="padding-left: 1em;">
-                        <a href="/index.html">Index</a> | 
-                        <a href="/legal.html">Legal</a> | 
-                        <a href="/dashboard.html">Dashboard</a>
-                    </div>
-                    <div style="padding-right: 1em;">
-                        <a href="#" id="loginModalLink" style="display: inline-block;">Login</a>
-                        <a href="#" id="logoutModalLink" style="display: none;">Logout</a>
-                    </div>
+                <nav class="navbar center-text">
+                    <a href="/index.html" class="logo"><img src="/logo.jpg" alt="Unity" style="width: 200px;" /></a>
+                    <ul class="menu">
+                        <li><a href="/index.html">Home</a></li>
+                        <li><a href="/legal.html">Legal</a></li>
+                        <li><a href="/dashboard.html">Dashboard</a></li>
+                        <li><a href="#" id="loginModalLink" style="display: inline-block;">Login</a></li>
+                        <li><a href="#" id="logoutModalLink" style="display: none;">Logout</a></li>
+                    </ul>
                 </nav>
                 <hr />
-            </div>
         </header>
         <div id="loginModal" class="modal">
             <div class="modal-content">
