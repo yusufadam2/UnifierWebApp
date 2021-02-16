@@ -76,27 +76,43 @@ body {
   transition: color .2s,background-color .2s
 }
 
+main {
+  height: 100%;
+}
+
 .text-break {
   word-wrap: break-word;
 }
 
 .navbar {
-  background-image: url(/background.jpg);
-  background-position: center center;
-  background-size: cover;
-  -webkit-background-size: cover;
+  /*height: 100vh;*/
 
-  height: 100vh;
+  display: flex;
+  justify-content: space-between;
   width: 100%;
 }
 
+.logo {
+  padding: 0 0;
+  margin: 0 0;
+  height: 50px;
+  width: 200px;
+  /*float: left;*/
+}
+
+.logo img {
+  height: 50px;
+}
+
 .menu {
-  width: 42%;
-  float: right;
+  margin: 0 0;
+  /*width: 42%;
+  float: right;*/
   list-style: none;
 }
 
 .menu li {
+  display: inline-block;
   width: 100px;
   height: 50px;
   line-height: 50px;
@@ -116,11 +132,6 @@ body {
 
 .menu li:hover a {
   color: #000;
-}
-
-.logo {
-  padding: 0 0;
-  float: left;
 }
 
 .banner-text {
