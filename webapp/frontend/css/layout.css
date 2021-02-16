@@ -1,0 +1,36 @@
+.container {
+  max-width: 40em;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 1em
+}
+
+.flexbox {
+  display: flex;
+}
+
+.float-left {
+  float: left;
+}
+
+.float-right {
+  float: right;
+}
+
+.h-stretch {
+  width: 100%;
+}
+
+.v-stretch {
+  height: 100%;
+}
+
+.center {
+  margin: auto;
+}
+
+.center-text {
+  text-align: center
+}
+
+

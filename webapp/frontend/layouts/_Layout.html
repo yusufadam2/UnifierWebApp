@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Unifier</title>
+
+        <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+        <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+        <meta name="author" content="Tutorial Group W6" />
+        <meta name="description" content="A Friend-Matcher Webapp" />
+        <meta name="kewords" content="Unifier, Friends, Friend-Matcher" />
+
+        <link href="/favicon.ico" rel="icon" type="image/ico" />
+        <link href="/favicon-16x16.png" rel="icon" type="image/png" sizes="16x16" />
+        <link href="/favicon-32x32.png" rel="icon" type="image/png" sizes="32x32" />
+        <link href="/favicon-96x96.png" rel="icon" type="image/png" sizes="96x96" />
+
+        <link href="/css/display-utils.css" rel="preload" as="style" />
+        <link href="/css/display-utils.css" rel="stylesheet" />
+        <link href="/css/style.css" rel="preload" as="style" />
+        <link href="/css/style.css" rel="stylesheet" />
+        <link href="/css/layout.css" rel="preload" as="style" />
+        <link href="/css/layout.css" rel="stylesheet" />
+        <link href="/css/modal.css" rel="preload" as="style" />
+        <link href="/css/modal.css" rel="stylesheet" />
+
+        <link href="/js/REST.js" rel="preload" as="script" />
+        <script src="/js/REST.js"></script>
+
+        <link href="/js/script.js" rel="preload" as="script" />
+        <script src="/js/script.js"></script>
+
+        <!--<script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>-->
+        <!--<script src="https://cdn.jsdelivr.net/npm/vue@2"></script>-->
+    </head>
+    <body>
+        <header>
+                <nav class="navbar center-text">
+                    <a href="/index.html" class="logo">
+                        <img src="/logo.jpg" alt="Unity" />
+                    </a>
+                    <ul class="menu">
+                        <li><a href="/index.html">Home</a></li>
+                        <li><a href="/legal.html">Legal</a></li>
+                        <li><a href="/dashboard.html">Dashboard</a></li>
+                        <li><a href="#" id="loginModalLink" style="display: inline-block;">Login</a></li>
+                        <li><a href="#" id="logoutModalLink" style="display: none;">Logout</a></li>
+                    </ul>
+                </nav>
+                <hr />
+        </header>
+        <div id="loginModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Login</h3>
+                </div>
+                <div class="modal-body">
+                    <form name="loginForm">
+                        <div>
+                            <!-- Column 1 -->
+                            <!-- Logo goes here -->
+                        </div>
+                        <div>
+                            <!-- Column 2 -->
+                            <label for="loginUsername">Username:</label><br />
+                            <input
+                                type="text"
+                                id="loginUsername"
+                                name="username"
+                                placeholder="Username goes here..."
+                                class="stretch"
+                            /><br />
+                            <a href="/forgot-username.html" class="float-right">
+                                <small>Forgot your username?</small>
+                            </a>
+                        </div>
+                        <div>
+                            <label for="loginPassword">Password:</label><br />
+                            <input
+                                type="password"
+                                id="loginPassword"
+                                name="password"
+                                placeholder="Password goes here..."
+                                class="stretch"
+                            /><br />
+                            <a href="/forgot-password.html" class="float-right">
+                                <small>Forgot your password?</small>
+                            </a>
+                        </div>
+                        <br /><hr />
+                        <div class="center-text">
+                            <input
+                                type="button"
+                                id="loginSubmitLink"
+                                value="Login"
+                                class="stretch"
+                            />
+                            <a href="/register.html">
+                                <small>New? Sign up!</small>
+                            </a>
+                        </div>
+                    </form>
+                </div>
+                <!--<div class="modal-footer"></div>-->
+            </div>
+        </div>
+        <div id="logoutModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Logout</h3>
+                </div>
+                <div class="modal-body">
+                    <form name="logoutForm">
+                        <div>
+                            <input
+                                type="button"
+                                id="logoutSubmitLink"
+                                value="Logout"
+                                class="stretch"
+                            />
+                        </div>
+                    </form>
+                </div>
+                <!--<div class="modal-footer"></div>-->
+            </div>
+        </div>
+        <main>PLACEHOLDER
+        </main>
+        <footer>
+            <hr />
+            <div class="center-text">
+                Footer
+            </div>
+        </footer>
+    </body>
+</html>

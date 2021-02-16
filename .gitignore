@@ -1,5 +1,5 @@
 ## user-specific files & folders
-DS_Store
+.DS_Store
 .vs/
 .vscode/
 .gitconfig
@@ -8,3 +8,5 @@ DS_Store
 env/
 __pycache__/
 
+## data files
+w6-comp10120.db
