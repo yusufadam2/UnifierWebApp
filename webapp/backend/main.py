@@ -23,6 +23,7 @@ def test():
 
 
 # TODO(mikolaj): implement csrf protection
+# TODO(daim): implement registration REST end point
 @app.route('/register', methods=['POST'])
 def register():
     conn = sqldb.try_open_conn()
@@ -36,7 +37,20 @@ def register():
     if email is None or username is None or password is None:
         return app.response_class(status=400)
 
+    query = 'SELECT * FROM UserAuth WHERE username LIKE ? OR email LIKE ?'
+    parameters = (username, email)
+    existing_user = sqldb.do_sql(cur, query, parameters)
+
+    if existing_user is not None:
+        print(f'Username/email already exists!')
+        return app.response_class(status=400)
+
     print(f'Registering user: {username} ({email}) with password {password}')
+
+    query = 'INSERT INTO UserAuth (username, email, hash, salt) VALUES (?,?,?,?,?);'
+    sqldb.do_sql(cur, CREATE_USER_AUTH_QUERY, (username, email, *crypto.hash_secret(password)))
+
+    print(f'Succesfuly registered user: {username} ({email})')
 
     return app.response_class(status=200)
 
