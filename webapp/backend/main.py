@@ -37,7 +37,7 @@ def register():
     if email is None or username is None or password is None:
         return app.response_class(status=400)
 
-    query = 'SELECT * FROM UserAuth WHERE username LIKE ?'
+    query = 'SELECT * FROM UserAuth WHERE username LIKE ?;'
     parameters = (username,)
     existing_user = sqldb.do_sql(cur, query, parameters)
 
@@ -45,7 +45,7 @@ def register():
         print(f'Username already exists! Try another username.')
         return app.response_class(status=400)
 
-    query = 'SELECT * FROM UserAuth WHERE email LIKE ?'
+    query = 'SELECT * FROM UserAuth WHERE email LIKE ?;'
     parameters = (email,)
     existing_user2 = sqldb.do_sql(cur, query, parameters)
 
@@ -55,8 +55,12 @@ def register():
 
     print(f'Registering user: {username} ({email}) with password {password}')
 
-    hash_pass = ()
-    hash_pass = crypto.hash_secret(password)
+    crypto.hash_secret(password)
+
+    query = 'INSERT INTO UserAuth (username, email, hash, salt) VALUES (?,?,?,?,?);'
+    sqldb.do_sql(cur, CREATE_USER_AUTH_QUERY, (username, email, *crypto.hash_secret(password)))
+
+    print(f'Succesfuly registered user: {username} ({email})')
 
     return app.response_class(status=200)
 
