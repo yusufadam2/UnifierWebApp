@@ -55,7 +55,7 @@ def register():
 
     print(f'Registering user: {username} ({email}) with password {password}')
 
-    crypto.hash_secret(password)
+    #crypto.hash_secret(password)
 
     query = 'INSERT INTO UserAuth (username, email, hash, salt) VALUES (?,?,?,?,?);'
     sqldb.do_sql(cur, CREATE_USER_AUTH_QUERY, (username, email, *crypto.hash_secret(password)))
