@@ -1,14 +1,26 @@
+import os
+
 import crypto
 import sqldb
 
 from flask import json, request, Flask, session, redirect, url_for
+from flask_session import Session
 
 
 # TODO(mikolaj): remove static_* parameters for production
 app = Flask(__name__, static_url_path='', static_folder='../static')
 
-app.secret_key = 'W6-COMP10120'
-app.token_key = 'csrf_token'
+SESSION_COOKIE_NAME = 'unifier-session'
+SESSION_COOKIE_PATH = '/'
+SESSION_COOKIE_SAMESITE = 'Strict'
+SESSION_COOKIE_HTTPONLY = False
+SESSION_COOKIE_SECURE = True
+
+SESSION_TYPE = 'filesystem'
+SECRET_KEY = os.urandom(16)
+
+app.config.from_object(__name__)
+sess = Session()
 
 
 @app.route('/')
@@ -16,15 +28,9 @@ def main():
     return app.send_static_file('index.html')
 
 
-@app.route('/test/')
-def test():
-    data = ['foo', 'bar', 42]
-    return app.response_class(response=json.dumps(data), status=200, mimetype='application/json')
-
-
 # TODO(mikolaj): implement csrf protection
 # TODO(daim): implement registration REST end point
-@app.route('/register', methods=['POST'])
+@app.route('/api/register', methods=['POST'])
 def register():
     conn = sqldb.try_open_conn()
     assert conn is not None
@@ -56,7 +62,7 @@ def register():
 
 
 # TODO(mikolaj): implement csrf protection
-@app.route('/login', methods=['POST'])
+@app.route('/api/login', methods=['POST'])
 def login():
     conn = sqldb.try_open_conn()
     assert conn is not None
@@ -75,7 +81,7 @@ def login():
     for uid, user_hash, user_salt in matching_users:
         if crypto.verify_secret(password, user_hash, user_salt):
             print(f'[user-{uid}] Logged in!')
-            session['userId'] = uid
+            session['uid'] = uid
             redirect('/')
 
             return app.response_class(status=200)
@@ -84,13 +90,13 @@ def login():
 
 
 # TODO(mikolaj): implement csrf protection
-@app.route('/logout', methods=['POST'])
+@app.route('/api/logout', methods=['POST'])
 def logout():
     conn = sqldb.try_open_conn()
     assert conn is not None
     cur = conn.cursor()
 
-    uid = request.values.get('uid', None)
+    uid = session.get('uid', None)
 
     if uid is None:
         return app.response_class(status=400)
