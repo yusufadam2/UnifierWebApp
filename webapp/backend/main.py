@@ -1,7 +1,7 @@
 import crypto
 import sqldb
 
-from flask import json, request, Flask
+from flask import json, request, Flask, session, redirect, url_for
 
 
 # TODO(mikolaj): remove static_* parameters for production
@@ -75,6 +75,8 @@ def login():
     for uid, user_hash, user_salt in matching_users:
         if crypto.verify_secret(password, user_hash, user_salt):
             print(f'[user-{uid}] Logged in!')
+            session['userId'] = uid
+            redirect('/')
 
             return app.response_class(status=200)
 
@@ -93,7 +95,10 @@ def logout():
     if uid is None:
         return app.response_class(status=400)
 
+    session.pop('uid')
+
     print(f'[user-{uid}] Logged out!')
+    redirect('/')
 
     return app.response_class(status=200)
 
