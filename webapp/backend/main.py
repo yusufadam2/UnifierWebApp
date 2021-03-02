@@ -17,7 +17,8 @@ SESSION_COOKIE_HTTPONLY = False
 SESSION_COOKIE_SECURE = True
 
 SESSION_TYPE = 'filesystem'
-SECRET_KEY = os.urandom(16)
+
+SECRET_KEY = b'\x11\xe7\x18\xbd\xf1\xban&a\x9ap\xa5\xdbc\xb2\xfa'
 
 app.config.from_object(__name__)
 sess = Session()
