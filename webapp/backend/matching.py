@@ -3,12 +3,29 @@ This module provides user matching functionality.
 """
 
 __all__ = [
-    'n_best_matches'
+    'n_rand_matches', 'n_best_matches'
 ]
+
+import random
 
 import sqldb
 
 from typing import List
+
+
+def n_rand_matches(cur, uid: int, n: int = 1) -> List:
+    """
+    Fetches n other random users.
+    """
+    
+    query = '''SELECT userId FROM UsersInterestsJoin
+    INNER JOIN Users ON UsersInterestsJoin.userId = Users.id
+    INNER JOIN Interests ON UsersInterestsJoin.interestId = Interests.id
+    WHERE userId <> ?;'''
+
+    others = sqldb.do_sql(cur, query, (uid,))
+
+    return [tup[0] for tup in random.sample(others, n)]
 
 
 def update_priority_queue(queue, new_user, new_score):
@@ -45,7 +62,7 @@ def update_priority_queue(queue, new_user, new_score):
 def n_best_matches(cur, uid: int, user_interests: List[int], n: int = 1) -> List:
     """
     Fetches the n other users who have the most matching interests from the 
-    given list.
+    given list. The list is of the format [(user-id, matching_interests)*].
     """
     user_matching_interests = {}
 
@@ -96,6 +113,9 @@ if __name__ == '__main__':
     user = sqldb.do_sql(cur, 'SELECT id FROM Users;')[0]
     user_interests = sqldb.do_sql(cur, 'SELECT interestId FROM UsersInterestsJoin INNER JOIN Users ON UsersInterestsJoin.userId = Users.id INNER JOIN Interests ON UsersInterestsJoin.interestId = Interests.id WHERE userId LIKE ?;', (user[0],))
 
+    print(f'Finding 1 random match for user {user}')
+    print(n_rand_matches(cur, user[0], 1))
+
     print(f'Finding 3 best matches for user {user} with interests {user_interests}')
-    print(n_best_matches(cur, 1, [interest[0] for interest in user_interests], 3))
+    print(n_best_matches(cur, user[0], [interest[0] for interest in user_interests], 3))
 
