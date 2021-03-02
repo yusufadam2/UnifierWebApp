@@ -31,11 +31,17 @@ PATH_LEN = 256
 
 
 def close_conn(conn: sql.Connection):
+    """
+    Closes the given database connection.
+    """
     conn.commit()
     conn.close()
 
 
 def try_open_conn() -> Optional[sql.Connection]:
+    """
+    Attempts to open a connection to the database.
+    """
     try:
         conn = sql.connect(DB)
         return conn
@@ -58,6 +64,7 @@ def do_sql(cur: sql.Cursor, query: str, parameters: Tuple = None) -> Optional:
         return cur.fetchall()
 
     except sql.OperationalError as err:
+        print(f'Error executing {query} with parameters {parameters}: {err}')
         return None
 
 
@@ -96,8 +103,8 @@ def bootstrap():
         id INTEGER UNIQUE NOT NULL PRIMARY KEY,
         name VARCHAR(100) UNIQUE NOT NULL);''')
 
-    do_sql(cur, '''DROP TABLE UsersInterestsJoins''')
-    do_sql(cur, '''CREATE TABLE UsersInterestsJoins(
+    do_sql(cur, '''DROP TABLE UsersInterestsJoin''')
+    do_sql(cur, '''CREATE TABLE UsersInterestsJoin(
         id INTEGER UNIQUE NOT NULL PRIMARY KEY,
         userId INTEGER NOT NULL,
         interestId INTEGER NOT NULL,
