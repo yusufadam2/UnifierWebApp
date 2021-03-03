@@ -104,10 +104,8 @@ def n_best_matches(cur, uid: int, user_interests: List[int], n: int = 1) -> List
     for match in reversed(n_best):
         if match is not None:
             match_user, match_score = match
-            print(match, match_user, match_score)
 
             if match_user not in previously_matched:
-                print(f'new match: {match_user}')
                 previously_matched.add(match_user)
                 matches.append(match)
                 continue
@@ -116,7 +114,6 @@ def n_best_matches(cur, uid: int, user_interests: List[int], n: int = 1) -> List
             random = random_matches.pop()[0]
 
             if random not in previously_matched:
-                print(f'new random: {random}')
                 previously_matched.add(random)
                 matches.append((random, 0))
                 break
