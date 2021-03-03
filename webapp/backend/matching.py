@@ -71,7 +71,6 @@ def n_best_matches(cur, uid: int, user_interests: List[int], n: int = 1) -> List
     INNER JOIN Interests ON UsersInterestsJoin.interestId = Interests.id
     WHERE userId <> ? AND interestId LIKE ?;'''
 
-
     # stores uid-score tuples (e.g. (uid('John Doe'), 42)) in worst-first order
     n_best = [None for i in range(n)]
 
@@ -86,6 +85,12 @@ def n_best_matches(cur, uid: int, user_interests: List[int], n: int = 1) -> List
                 user_matching_interests[other_id] = new_other_score
 
                 n_best = update_priority_queue(n_best, other_id, new_other_score)
+
+    for n in n_best:
+        if n is not None:
+            break
+    else:
+        return n_rand_matches(cur, uid, n) # only executed if no break encountered
 
     return n_best
 
