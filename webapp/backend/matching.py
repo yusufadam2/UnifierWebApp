@@ -10,22 +10,31 @@ import random
 
 import sqldb
 
-from typing import List
+from typing import List, Tuple
 
 
-def n_rand_matches(cur, uid: int, n: int = 1) -> List:
+def n_rand_matches(cur, uid: int, n: int = 1) -> List[Tuple[int]]:
     """
-    Fetches n other random users.
+    Fetches n other random users. The returned list may be smaller than 
+    n (if not enough random matches exist to fill it).
     """
     
-    query = '''SELECT userId FROM UsersInterestsJoin
-    INNER JOIN Users ON UsersInterestsJoin.userId = Users.id
-    INNER JOIN Interests ON UsersInterestsJoin.interestId = Interests.id
-    WHERE userId <> ?;'''
+    query = '''SELECT userId FROM UsersInterestsJoin WHERE userId <> ?;'''
 
     others = sqldb.do_sql(cur, query, (uid,))
 
-    return [tup[0] for tup in random.sample(others, n)]
+    if others is None:
+        return []
+
+    random_matches = random.sample(others, min(n, len(others)))
+
+    matches, previous_matches = [], set()
+    for match in random_matches:
+        if match not in previous_matches:
+            previous_matches.add(match)
+            matches.append(match)
+
+    return matches
 
 
 def update_priority_queue(queue, new_user, new_score):
@@ -59,10 +68,11 @@ def update_priority_queue(queue, new_user, new_score):
     return queue
 
 
-def n_best_matches(cur, uid: int, user_interests: List[int], n: int = 1) -> List:
+def n_best_matches(cur, uid: int, user_interests: List[int], n: int = 1) -> List[Tuple[int, int]]:
     """
     Fetches the n other users who have the most matching interests from the 
-    given list. The list is of the format [(user-id, matching_interests)*].
+    given list. The list is of the format [(user-id, matching_interests)*], 
+    and may be smaller than n (if not enough matches exist to fill it).
     """
     user_matching_interests = {}
 
@@ -86,13 +96,32 @@ def n_best_matches(cur, uid: int, user_interests: List[int], n: int = 1) -> List
 
                 n_best = update_priority_queue(n_best, other_id, new_other_score)
 
-    for n in n_best:
-        if n is not None:
-            break
-    else:
-        return n_rand_matches(cur, uid, n) # only executed if no break encountered
 
-    return n_best
+    random_matches = n_rand_matches(cur, uid, n)
+
+    # deduplicate the list, and fill the remainder with random matches
+    matches, previously_matched = [], set()
+    for match in reversed(n_best):
+        if match is not None:
+            match_user, match_score = match
+            print(match, match_user, match_score)
+
+            if match_user not in previously_matched:
+                print(f'new match: {match_user}')
+                previously_matched.add(match_user)
+                matches.append(match)
+                continue
+
+        while 0 < len(random_matches):
+            random = random_matches.pop()[0]
+
+            if random not in previously_matched:
+                print(f'new random: {random}')
+                previously_matched.add(random)
+                matches.append((random, 0))
+                break
+
+    return matches
 
 
 if __name__ == '__main__':
@@ -121,6 +150,12 @@ if __name__ == '__main__':
     print(f'Finding 1 random match for user {user}')
     print(n_rand_matches(cur, user[0], 1))
 
+    print(f'Finding 10 random match for user {user}')
+    print(n_rand_matches(cur, user[0], 10))
+
     print(f'Finding 3 best matches for user {user} with interests {user_interests}')
     print(n_best_matches(cur, user[0], [interest[0] for interest in user_interests], 3))
+
+    print(f'Finding 10 best matches for user {user} with interests {user_interests}')
+    print(n_best_matches(cur, user[0], [interest[0] for interest in user_interests], 10))
 
