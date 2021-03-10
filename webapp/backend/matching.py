@@ -26,46 +26,11 @@ def n_rand_matches(cur, uid: int, n: int = 1) -> List[Tuple[int]]:
     if others is None:
         return []
 
-    random_matches = random.sample(others, min(n, len(others)))
+    others = set(others)
 
-    matches, previous_matches = [], set()
-    for match in random_matches:
-        if match not in previous_matches:
-            previous_matches.add(match)
-            matches.append(match)
-
-    return matches
-
-
-def update_priority_queue(queue, new_user, new_score):
-    new_tuple = (new_user, new_score)
-
-    for i in range(len(queue)-1, -1, -1):
-        # if an empty space is found, fill it
-        if queue[i] is None:
-            queue[i] = (new_user, new_score)
-            break
-
-        # if the space is not empty, and we have a higher value than the current
-        # occupant, insert into this space and shuffle other entries down
-        if new_score > queue[i][1]:
-            prev = queue[i]
-            queue[i] = new_tuple
-
-            # shuffle down the remaining entries
-            for j in range(i-1, -1, -1):
-                # if there is still space, fill it
-                if queue[j] is None:
-                    queue[j] = prev
-                    break
-
-                # otherwise swap the values and continue shuffling
-                if prev[1] > queue[j][1]:
-                    prev, queue[j] = queue[j], prev
-
-            break
-
-    return queue
+    # using a set deduplicates the user list for us, but we have to convert 
+    # back to a list to pass to random.sample without a deprecation warning
+    return random.sample(list(others), min(n, len(others)))
 
 
 def n_best_matches(cur, uid: int, user_interests: List[int], n: int = 1) -> List[Tuple[int, int]]:
@@ -76,73 +41,90 @@ def n_best_matches(cur, uid: int, user_interests: List[int], n: int = 1) -> List
     """
     user_matching_interests = {}
 
-    query = '''SELECT userId FROM UsersInterestsJoin
+    interest_category = '''SELECT categoryId FROM Interests
+    INNER JOIN InterestCategories ON Interests.categoryId = InterestCategories.id
+    WHERE Interests.id LIKE ?;'''
+
+    user_interest_categories = set()
+    for interest in user_interests:
+        category = sqldb.do_sql(cur, interest_category, (interest,))[0][0]
+        if category not in user_interest_categories:
+            user_interest_categories.add(category)
+
+    matching_categories = '''SELECT userId FROM UsersInterestsJoin
+    INNER JOIN Users ON UsersInterestsJoin.userId = Users.id
+    INNER JOIN Interests ON UsersInterestsJoin.interestId = Interests.id
+    INNER JOIN InterestCategories ON Interests.categoryId = InterestCategories.id
+    WHERE userId <> ? AND categoryId LIKE ?;'''
+
+    matching_interests = '''SELECT userId FROM UsersInterestsJoin
     INNER JOIN Users ON UsersInterestsJoin.userId = Users.id 
     INNER JOIN Interests ON UsersInterestsJoin.interestId = Interests.id
+    INNER JOIN InterestCategories ON Interests.categoryId = InterestCategories.id
     WHERE userId <> ? AND interestId LIKE ?;'''
 
-    # stores uid-score tuples (e.g. (uid('John Doe'), 42)) in worst-first order
-    n_best = [None for i in range(n)]
+    matched_interest_score = 10
+    matched_category_score = 1
 
-    for interest in user_interests:
-        matching_users = sqldb.do_sql(cur, query, (uid, interest))
+    # search based on interest categories (to establish a baseline)
+    for category in user_interest_categories:
+        matching_users = sqldb.do_sql(cur, matching_categories, (uid, category))
 
         if matching_users is not None:
+            matching_users = set(matching_users)
+
             for other in matching_users:
                 other_id = other[0]
 
-                new_other_score = user_matching_interests.get(other_id, 0) + 1
-                user_matching_interests[other_id] = new_other_score
+                old_score = user_matching_interests.get(other_id, 0)
+                new_score = old_score + matched_category_score
+                user_matching_interests[other_id] = new_score
 
-                n_best = update_priority_queue(n_best, other_id, new_other_score)
+    # search based on more granular interest
+    for interest in user_interests:
+        matching_users = sqldb.do_sql(cur, matching_interests, (uid, interest))
 
+        if matching_users is not None:
+            matching_users = set(matching_users)
+
+            for other in matching_users:
+                other_id = other[0]
+
+                old_score = user_matching_interests.get(other_id, 0)
+                new_score = old_score + matched_interest_score
+                user_matching_interests[other_id] = new_score
 
     random_matches = n_rand_matches(cur, uid, n)
 
-    # deduplicate the list, and fill the remainder with random matches
-    matches, previously_matched = [], set()
-    for match in reversed(n_best):
-        if match is not None:
-            match_user, match_score = match
+    score_key = lambda user: user_matching_interests[user]
+    best_matches = sorted(user_matching_interests, key=score_key, reverse=True)[:n]
 
-            if match_user not in previously_matched:
-                previously_matched.add(match_user)
-                matches.append(match)
-                continue
+    matches = [(user, user_matching_interests[user]) for user in best_matches]
 
-        while 0 < len(random_matches):
-            random = random_matches.pop()[0]
+    # fill the remainder of the match list with random matches
+    previously_matched = set(best_matches)
+    while len(matches) < n and 0 < len(random_matches):
+        random = random_matches.pop()[0]
 
-            if random not in previously_matched:
-                previously_matched.add(random)
-                matches.append((random, 0))
-                break
+        if random not in previously_matched:
+            previously_matched.add(random)
+            matches.append((random, 0))
+            break
 
     return matches
 
 
 if __name__ == '__main__':
-    queue = [('Foo', 1), ('Bar', 2), ('Baz', 3), None]
-    print(f'Inserting (John Doe, 4) into {queue}')
-    print(update_priority_queue(queue, 'John Doe', 4))
-
-    queue = [('Foo', 10)]
-    print(f'Inserting (John Doe, 1) into {queue}')
-    print(update_priority_queue(queue, 'John Doe', 1))
-
-    queue = [('Foo', 1)]
-    print(f'Inserting (John Doe, 2) into {queue}')
-    print(update_priority_queue(queue, 'John Doe', 2))
-
-    queue = [('Foo', 1), ('Bar', 2)]
-    print(f'Inserting (John Doe, 3) into {queue}')
-    print(update_priority_queue(queue, 'John Doe', 3))
-
     conn = sqldb.try_open_conn()
     cur = conn.cursor()
 
-    user = sqldb.do_sql(cur, 'SELECT id FROM Users;')[0]
-    user_interests = sqldb.do_sql(cur, 'SELECT interestId FROM UsersInterestsJoin INNER JOIN Users ON UsersInterestsJoin.userId = Users.id INNER JOIN Interests ON UsersInterestsJoin.interestId = Interests.id WHERE userId LIKE ?;', (user[0],))
+    select_interests = '''SELECT interestId FROM UsersInterestsJoin
+    INNER JOIN Users ON UsersInterestsJoin.userId = Users.id
+    INNER JOIN Interests ON UsersInterestsJoin.interestId = Interests.id
+    WHERE userId LIKE ?;'''
+
+    user = sqldb.do_sql(cur, 'SELECT id FROM Users;')[2]
+    user_interests = sqldb.do_sql(cur, select_interests, (user[0],))
 
     print(f'Finding 1 random match for user {user}')
     print(n_rand_matches(cur, user[0], 1))
