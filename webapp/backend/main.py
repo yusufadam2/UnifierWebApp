@@ -55,7 +55,7 @@ def register():
     print(f'Registering user: {username} ({email}) with password {password}')
 
     query = 'INSERT INTO UserAuth (username, email, hash, salt) VALUES (?,?,?,?,?);'
-    sqldb.do_sql(cur, CREATE_USER_AUTH_QUERY, (username, email, *crypto.hash_secret(password)))
+    sqldb.do_sql(cur, query, (username, email, *crypto.hash_secret(password)))
 
     print(f'Succesfuly registered user: {username} ({email})')
 
@@ -75,7 +75,7 @@ def login():
     if username is None or password is None:
         return app.response_class(status=400)
 
-    query = 'SELECT userId, hash, salt FROM UserAuth WHERE username LIKE ?'
+    query = 'SELECT userId, hash, salt FROM UserAuth WHERE username LIKE ?;'
     parameters = (username,)
     matching_users = sqldb.do_sql(cur, query, parameters)
 
@@ -108,4 +108,84 @@ def logout():
     redirect('/')
 
     return app.response_class(status=200)
+
+
+@app.route('/api/readProfile', methods=['GET'])
+def readProfile:
+    conn = sqldb.try_open_conn()
+    assert conn is not None
+    cur = conn.cursor()
+
+    uid = request.args.get('uid')
+
+    query = 'SELECT * FROM Users WHERE id LIKE ?;'
+    parameters = (uid,)
+    cur.execute(query, parameters)
+    profile = cur.fetchone()
+
+    query2 = 'SELECT data FROM UserPictures WHERE id LIKE ?;'
+    picId = profile[5]
+    parameters2 = (picId,)
+    cur.execute(query2, parameters2)
+    profilePic = cur.fetchone()
+
+    finalProfile =  (profile + profilePic)
+
+    return finalProfile
+
+
+@app.route('/api/updateProfile', methods=['GET'])
+def updateProfile:
+    conn = sqldb.try_open_conn()
+    assert conn is not None
+    cur = conn.cursor()
+
+    uid = request.args.get('uid')
+    name = request.args.get('name')
+    dob = user.args.get('dob')
+    interests = request.args.get('interests')
+    biography = request.args.get('biography')
+    gender = request.args.get('gender')
+    profilePicture = request.args.get('profilePicture')
+
+    user_exist = sqldb.do_sql(cur, 'SELECT * FROM Users WHERE id LIKE ?;', uid)
+
+    if user_exist is None:
+        query = 'INSERT INTO Users (id, name, dob, gender, bio) VALUES (?,?,?,?,?);'
+        parameters = (uid, name, dob, gender, biography)
+        cur.execute(query, parameters)
+
+        query = 'INSERT INTO UserPictures(data) VALUES (?);'
+        parameters = (profilePicture,)
+        cur.execute(query, parameters)
+    else: 
+        query = 'UPDATE Users SET bio = ?, gender = ? WHERE id LIKE ?;'
+        parameters = (biography, gender, uid)
+        cur.execute(query, parameters)
+
+        query = 'SELECT pictureId FROM Users WHERE id LIKE ?;'
+        parameters = (uid,)
+        cur.execute(query, parameters)
+        picId = cur.fetchone()
+
+        query = 'UPDATE UserPictures SET data = ? INNER JOIN Users ON UserPictures.id = Users.pictureId WHERE Users.pictureId LIKE ?;'
+        parameters = (profilePicture, picId)
+        cur.execute(query, parameters)
+
+    return app.response_class(status=200)
+
+#TODO
+@app.route('/api/sendMessage', methods=['GET'])
+def sendMessage:
+    return app.response_class(status=400)
+
+#TODO
+@app.route('/api/fetchMessages', methods=['GET'])
+def fetchMessages:
+    return app.response_class(status=400)
+
+
+
+
+
 
