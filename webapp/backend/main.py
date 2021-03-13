@@ -5,6 +5,7 @@ import sqldb
 
 from flask import json, request, Flask, session, redirect, url_for
 from flask_session import Session
+from datetime import datetime
 
 
 # TODO(mikolaj): remove static_* parameters for production
@@ -129,11 +130,19 @@ def readProfile:
     cur.execute(query2, parameters2)
     profilePic = cur.fetchone()
 
-    finalProfile =  (profile + profilePic)
+    query3 = 'SELECT interestId FROM UsersInterestsJoin INNER JOIN Users ON UsersInterestsJoin.userId = Users.id INNER JOIN Interests ON UsersInterestsJoin.interestId = Interests.id WHERE userId LIKE ?;'
+    parameters3 = (uid,)
+    profileInterestsId = sqldb.do_sql(cur, query3, parameters3)
+
+    query4 = 'SELECT name FROM Interests WHERE id LIKE ?;'
+    profileInterests = sqldb.do_sql(cur, query4, profileInterestsId)
+
+    finalProfile =  (profile + profilePic + profileInterests)
 
     return finalProfile
 
 
+#update interests left to do
 @app.route('/api/updateProfile', methods=['GET'])
 def updateProfile:
     conn = sqldb.try_open_conn()
@@ -148,6 +157,8 @@ def updateProfile:
     gender = request.args.get('gender')
     profilePicture = request.args.get('profilePicture')
 
+    interests_list = interests.split(",")
+
     user_exist = sqldb.do_sql(cur, 'SELECT * FROM Users WHERE id LIKE ?;', uid)
 
     if user_exist is None:
@@ -158,6 +169,12 @@ def updateProfile:
         query = 'INSERT INTO UserPictures(data) VALUES (?);'
         parameters = (profilePicture,)
         cur.execute(query, parameters)
+
+        for interest in interests_list:
+            interest_id = sqldb.get_interest_id(interest)
+            query_interest = 'INSERT INTO UsersInterestsJoin (userId, interestId) VALUES (?,?);'
+            do_sql(cur, query_interest, (uid, interest_id))
+
     else: 
         query = 'UPDATE Users SET bio = ?, gender = ? WHERE id LIKE ?;'
         parameters = (biography, gender, uid)
@@ -168,21 +185,78 @@ def updateProfile:
         cur.execute(query, parameters)
         picId = cur.fetchone()
 
-        query = 'UPDATE UserPictures SET data = ? INNER JOIN Users ON UserPictures.id = Users.pictureId WHERE Users.pictureId LIKE ?;'
+        query = 'UPDATE UserPictures SET data = ? INNER JOIN Users ON UserPictures.id = Users.pictureId WHERE id LIKE ?;'
         parameters = (profilePicture, picId)
         cur.execute(query, parameters)
 
+        for interest in interest_list:
+            interest_id = sqldb.get_interest_id(interest)
+            existing_interests = do_sql(cur, 'SELECT interestId FROM UsersInterestsJoin WHERE userId LIKE ?;', (uid,))
+            if (interest in existing_interests):
+                continue;
+            else:
+                query_interest = 'INSERT INTO UsersInterestsJoin (userId, interestId) VALUES (?,?);'
+                do_sql(cur, query_interest, (uid, interest_id))
+
     return app.response_class(status=200)
 
-#TODO
-@app.route('/api/sendMessage', methods=['GET'])
-def sendMessage:
-    return app.response_class(status=400)
 
-#TODO
+@app.route('/api/sendMessage', methods=['POST'])
+def sendMessage:
+    conn = sqldb.try_open_conn()
+    assert conn is not None
+    cur = conn.cursor()
+
+    uid = request.args.get('uid')
+    cid = request.args.get('cid')
+    message = request.args.get('message')
+    date_time = datetime.utcnow()
+
+    query = 'SELECT converstaionId FROM UsersConversatinsJoin INNER JOIN Users ON UsersConversatinsJoin.userId = Users.id WHERE userId LIKE ? AND converstaionId LIKE ?;'
+    parameters = (uid, cid)
+    convoValidation = sqldb.do_sql(cur, query, parameters)
+
+    if convoValidation is None:
+        print(f'User does not have access to this conversation!')
+        return app.response_class(status=400)
+
+    query2 = 'SELECT fpath FROM Conversations INNER JOIN UsersConversatinsJoin ON UsersConversatinsJoin.converstaionId = Conversations.id WHERE id LIKE ?;'
+    parameters2 = (cid,)
+    cur.execute(query2, parameters2)
+    fpath = cur.fetchone()
+
+    write_message(fpath, date_time, uid, message)
+    return app.response_class(status=200)
+
+
 @app.route('/api/fetchMessages', methods=['GET'])
 def fetchMessages:
-    return app.response_class(status=400)
+    conn = sqldb.try_open_conn()
+    assert conn is not None
+    cur = conn.cursor()
+
+    uid = request.args.get('uid')
+    cid = request.args.get('cid')
+    message = request.args.get('message')
+    fromDate = request.args.get('fromDate')
+
+    query = 'SELECT converstaionId FROM UsersConversatinsJoin INNER JOIN Users ON UsersConversatinsJoin.userId = Users.id WHERE userId LIKE ? AND converstaionId LIKE ?;'
+    parameters = (uid, cid)
+    convoValidation = sqldb.do_sql(cur, query, parameters)
+
+    if convoValidation is None:
+        print(f'User does not have access to this conversation!')
+        return app.response_class(status=400)
+
+    query2 = 'SELECT fpath FROM Conversations INNER JOIN UsersConversatinsJoin ON UsersConversatinsJoin.converstaionId = Conversations.id WHERE id LIKE ?;'
+    parameters2 = (cid,)
+    cur.execute(query2, parameters2)
+    fpath = cur.fetchone()
+
+    msgs_to_read = read_messages(fpath, fromDate)
+
+
+    return msgs_to_read
 
 
 
