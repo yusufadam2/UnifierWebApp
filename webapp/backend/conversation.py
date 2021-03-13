@@ -3,11 +3,11 @@ import re
 
 def read_message(fpath,fromDate):
 	contents = []
-    begin_date = datetime.datetime.strptime(fromDate, '%d-%m-%Y')  
-    end_date = datetime.datetime.now()
+	begin_date = datetime.datetime.strptime(fromDate, '%d-%m-%Y')  
+	end_date = datetime.datetime.now()
 
-    while begin_date <= end_date:  
-        date_str = begin_date.strftime('%d-%m-%Y')  
+	while begin_date <= end_date:  
+		date_str = begin_date.strftime('%d-%m-%Y')  
         
 		with open('{}/{}.conv'.format(fpath,date_str),'r') as message:
 			for line in message.readlines():
