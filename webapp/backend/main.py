@@ -1,6 +1,6 @@
 import crypto
 import sqldb
-import daytime
+import datetime
 
 from flask import json, request, Flask
 
@@ -98,33 +98,3 @@ def logout():
     print(f'[user-{uid}] Logged out!')
 
     return app.response_class(status=200)
-
-def read_message(fpath,fromDate):
-    date_list = []  
-    begin_date = datetime.datetime.strptime(fromDate, "%d-%m-%Y")  
-    end_date = datetime.datetime.strptime(time.strftime('%d-%m-%Y',time.localtime(time.time())), "%d-%m-%Y")
-
-    while begin_date <= end_date:  
-        date_str = begin_date.strftime("%d-%m-%Y")  
-        date_list.append(fpath+date_str+".conv") 
-        begin_date += datetime.timedelta(days=1)
-
-    for item in date_list:
-        with open(item,'r') as message:
-            contents = message.readlines()
-
-    return contents
-
-
-def write_message(uid,fpath,message,date):
-    date_file = str(date)+".conv"
-
-    if not (os.path.isdir(fpath)):
-        return app.response_class(status=400)
-
-    date_path = fpath+date_file
-    os.mknod(date_path)
-
-    message = (uid,message)
-    with open(date_file,"w") as conversation:
-        conversation.write(message)
