@@ -112,30 +112,34 @@ def logout():
 
 
 @app.route('/api/readProfile', methods=['GET'])
-def readProfile:
+def read_profile:
     conn = sqldb.try_open_conn()
     assert conn is not None
     cur = conn.cursor()
 
-    uid = request.args.get('uid')
+    uid = request.values.get('uid')
 
     query = 'SELECT * FROM Users WHERE id LIKE ?;'
     parameters = (uid,)
     cur.execute(query, parameters)
     profile = cur.fetchone()
 
-    query2 = 'SELECT data FROM UserPictures WHERE id LIKE ?;'
+    query = 'SELECT data FROM UserPictures WHERE id LIKE ?;'
     picId = profile[5]
-    parameters2 = (picId,)
-    cur.execute(query2, parameters2)
+    parameters = (picId,)
+    cur.execute(query, parameters)
     profilePic = cur.fetchone()
 
-    query3 = 'SELECT interestId FROM UsersInterestsJoin INNER JOIN Users ON UsersInterestsJoin.userId = Users.id INNER JOIN Interests ON UsersInterestsJoin.interestId = Interests.id WHERE userId LIKE ?;'
-    parameters3 = (uid,)
-    profileInterestsId = sqldb.do_sql(cur, query3, parameters3)
+    query = '''SELECT interestId FROM UsersInterestsJoin 
+    INNER JOIN Users ON UsersInterestsJoin.userId = Users.id 
+    INNER JOIN Interests ON UsersInterestsJoin.interestId = Interests.id 
+    WHERE userId LIKE ?;'''
 
-    query4 = 'SELECT name FROM Interests WHERE id LIKE ?;'
-    profileInterests = sqldb.do_sql(cur, query4, profileInterestsId)
+    parameters = (uid,)
+    profileInterestsId = sqldb.do_sql(cur, query, parameters)
+
+    query = 'SELECT name FROM Interests WHERE id LIKE ?;'
+    profileInterests = sqldb.do_sql(cur, query, profileInterestsId)
 
     finalProfile =  (profile + profilePic + profileInterests)
 
@@ -144,18 +148,18 @@ def readProfile:
 
 #update interests left to do
 @app.route('/api/updateProfile', methods=['GET'])
-def updateProfile:
+def update_profile:
     conn = sqldb.try_open_conn()
     assert conn is not None
     cur = conn.cursor()
 
-    uid = request.args.get('uid')
-    name = request.args.get('name')
-    dob = user.args.get('dob')
-    interests = request.args.get('interests')
-    biography = request.args.get('biography')
-    gender = request.args.get('gender')
-    profilePicture = request.args.get('profilePicture')
+    uid = request.values.get('uid')
+    name = request.values.get('name')
+    dob = user.values.get('dob')
+    interests = request.values.get('interests')
+    biography = request.values.get('biography')
+    gender = request.values.get('gender')
+    profilePicture = request.values.get('profilePicture')
 
     interests_list = interests.split(",")
 
@@ -185,7 +189,10 @@ def updateProfile:
         cur.execute(query, parameters)
         picId = cur.fetchone()
 
-        query = 'UPDATE UserPictures SET data = ? INNER JOIN Users ON UserPictures.id = Users.pictureId WHERE id LIKE ?;'
+        query = '''UPDATE UserPictures SET data = ? 
+        INNER JOIN Users ON UserPictures.id = Users.pictureId 
+        WHERE id LIKE ?;'''
+
         parameters = (profilePicture, picId)
         cur.execute(query, parameters)
 
@@ -202,17 +209,20 @@ def updateProfile:
 
 
 @app.route('/api/sendMessage', methods=['POST'])
-def sendMessage:
+def send_message:
     conn = sqldb.try_open_conn()
     assert conn is not None
     cur = conn.cursor()
 
-    uid = request.args.get('uid')
-    cid = request.args.get('cid')
-    message = request.args.get('message')
+    uid = request.values.get('uid')
+    cid = request.values.get('cid')
+    message = request.values.get('message')
     date_time = datetime.utcnow()
 
-    query = 'SELECT converstaionId FROM UsersConversatinsJoin INNER JOIN Users ON UsersConversatinsJoin.userId = Users.id WHERE userId LIKE ? AND converstaionId LIKE ?;'
+    query = '''SELECT converstaionId FROM UsersConversatinsJoin 
+    INNER JOIN Users ON UsersConversatinsJoin.userId = Users.id 
+    WHERE userId LIKE ? AND converstaionId LIKE ?;'''
+
     parameters = (uid, cid)
     convoValidation = sqldb.do_sql(cur, query, parameters)
 
@@ -220,27 +230,33 @@ def sendMessage:
         print(f'User does not have access to this conversation!')
         return app.response_class(status=400)
 
-    query2 = 'SELECT fpath FROM Conversations INNER JOIN UsersConversatinsJoin ON UsersConversatinsJoin.converstaionId = Conversations.id WHERE id LIKE ?;'
-    parameters2 = (cid,)
-    cur.execute(query2, parameters2)
+    query = '''SELECT fpath FROM Conversations 
+    INNER JOIN UsersConversatinsJoin ON UsersConversatinsJoin.converstaionId = Conversations.id 
+    WHERE id LIKE ?;'''
+
+    parameters = (cid,)
+    cur.execute(query, parameters)
     fpath = cur.fetchone()
 
-    write_message(fpath, date_time, uid, message)
+    conversations.write_message(fpath, date_time, uid, message)
     return app.response_class(status=200)
 
 
 @app.route('/api/fetchMessages', methods=['GET'])
-def fetchMessages:
+def fetch_messages:
     conn = sqldb.try_open_conn()
     assert conn is not None
     cur = conn.cursor()
 
-    uid = request.args.get('uid')
-    cid = request.args.get('cid')
-    message = request.args.get('message')
-    fromDate = request.args.get('fromDate')
+    uid = request.values.get('uid')
+    cid = request.values.get('cid')
+    message = request.values.get('message')
+    fromDate = request.values.get('fromDate')
 
-    query = 'SELECT converstaionId FROM UsersConversatinsJoin INNER JOIN Users ON UsersConversatinsJoin.userId = Users.id WHERE userId LIKE ? AND converstaionId LIKE ?;'
+    query = '''SELECT converstaionId FROM UsersConversatinsJoin 
+    INNER JOIN Users ON UsersConversatinsJoin.userId = Users.id 
+    WHERE userId LIKE ? AND converstaionId LIKE ?;'''
+
     parameters = (uid, cid)
     convoValidation = sqldb.do_sql(cur, query, parameters)
 
@@ -248,12 +264,15 @@ def fetchMessages:
         print(f'User does not have access to this conversation!')
         return app.response_class(status=400)
 
-    query2 = 'SELECT fpath FROM Conversations INNER JOIN UsersConversatinsJoin ON UsersConversatinsJoin.converstaionId = Conversations.id WHERE id LIKE ?;'
-    parameters2 = (cid,)
-    cur.execute(query2, parameters2)
+    query = '''SELECT fpath FROM Conversations 
+    INNER JOIN UsersConversatinsJoin ON UsersConversatinsJoin.converstaionId = Conversations.id 
+    WHERE id LIKE ?;'''
+
+    parameters = (cid,)
+    cur.execute(query, parameters)
     fpath = cur.fetchone()
 
-    msgs_to_read = read_messages(fpath, fromDate)
+    msgs_to_read = conversations.read_messages(fpath, fromDate)
 
 
     return msgs_to_read
