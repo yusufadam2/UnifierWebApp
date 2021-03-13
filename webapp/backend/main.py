@@ -1,5 +1,6 @@
 import crypto
 import sqldb
+import daytime
 
 from flask import json, request, Flask
 
@@ -37,7 +38,7 @@ def register():
     if email is None or username is None or password is None:
         return app.response_class(status=400)
 
-    query = 'SELECT * FROM UserAuth WHERE username LIKE ? OR email LIKE ?'
+    query = 'SELECT * FROM UserAuth WHERE username LIKE ? OR email LIKE ?;'
     parameters = (username, email)
     existing_user = sqldb.do_sql(cur, query, parameters)
 
@@ -48,7 +49,8 @@ def register():
     print(f'Registering user: {username} ({email}) with password {password}')
 
     query = 'INSERT INTO UserAuth (username, email, hash, salt) VALUES (?,?,?,?,?);'
-    sqldb.do_sql(cur, CREATE_USER_AUTH_QUERY, (username, email, *crypto.hash_secret(password)))
+    parameters = (username, email, *crypto.hash_secret(password))
+    sqldb.do_sql(cur, query, parameters)
 
     print(f'Succesfuly registered user: {username} ({email})')
 
@@ -69,7 +71,7 @@ def login():
         return app.response_class(status=400)
 
     query = 'SELECT userId, hash, salt FROM UserAuth WHERE username LIKE ?'
-    parameters = (username,)
+    parameters = (username)
     matching_users = sqldb.do_sql(cur, query, parameters)
 
     for uid, user_hash, user_salt in matching_users:
@@ -97,3 +99,32 @@ def logout():
 
     return app.response_class(status=200)
 
+def read_message(fpath,fromDate):
+    date_list = []  
+    begin_date = datetime.datetime.strptime(fromDate, "%d-%m-%Y")  
+    end_date = datetime.datetime.strptime(time.strftime('%d-%m-%Y',time.localtime(time.time())), "%d-%m-%Y")
+
+    while begin_date <= end_date:  
+        date_str = begin_date.strftime("%d-%m-%Y")  
+        date_list.append(fpath+date_str+".conv") 
+        begin_date += datetime.timedelta(days=1)
+
+    for item in date_list:
+        with open(item,'r') as message:
+            contents = message.readlines()
+
+    return contents
+
+
+def write_message(uid,fpath,message,date):
+    date_file = str(date)+".conv"
+
+    if not (os.path.isdir(fpath)):
+        return app.response_class(status=400)
+
+    date_path = fpath+date_file
+    os.mknod(date_path)
+
+    message = (uid,message)
+    with open(date_file,"w") as conversation:
+        conversation.write(message)
