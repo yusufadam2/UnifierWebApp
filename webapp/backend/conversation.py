@@ -1,31 +1,33 @@
 import datetime
 import re
+import os
 
-def read_message(fpath,fromDate):
-	contents = []
-	begin_date = datetime.datetime.strptime(fromDate, '%d-%m-%Y')  
+def read_messages(fpath,from_date):
+	contents = ()
 	end_date = datetime.datetime.now()
 
-	while begin_date <= end_date:  
-		date_str = begin_date.strftime('%d-%m-%Y')  
+	while from_date <= end_date:  
+		date_str = from_date.strftime('%d-%m-%Y')  
         
-		with open('{}/{}.conv'.format(fpath,date_str),'r') as message:
-			for line in message.readlines():
-				contents.append(re.findall(r'(.+?);(.+?)'),line)
+		with open('{}/{}.conv'.format(fpath,date_str),'r') as conversation:
+			for line in message:
+				contents.append(line.split(':'))
 
-		begin_date += datetime.timedelta(days=1)
+		from_date += datetime.timedelta(days=1)
 
 	return contents
 
 
-def write_message(uid,fpath,message,date):
+def write_message(fpath,date,uid,message):
 	date_file = f'{date}.conv'
 
-	if not (os.path.isdir(fpath)):
+	if not os.path.isdir(fpath):
 		os.makedirs(fpath)
 
-	date_path = fpath+date_file
-	os.mknod(date_path)
+	date_path = fpath+'/'+date_file
 
-	with open(date_file, 'a') as conversation:
+	if os.path.isfile(date_file):
+		os.mknod(date_path)
+
+	with open(date_path, 'a') as conversation:
 		conversation.write(f'{uid};{message}')
