@@ -278,7 +278,7 @@ def fetch_messages:
     return msgs_to_read
 
 
-@app.route('/api/intrests', methods = ['GET'])
+@app.route('/api/interests', methods = ['GET'])
 def fetch_all_interests:
     conn = sqldb.try_open_conn()
     assert conn is not None
@@ -286,7 +286,7 @@ def fetch_all_interests:
 
     query = '''SELECT name FROM Interests'''
     allInterests = sqldb.do_sql(query)
-    
+
     return allInterests
 
 
