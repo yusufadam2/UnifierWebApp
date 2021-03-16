@@ -286,7 +286,7 @@ def fetch_all_interests:
     assert conn is not None
     cur = conn.cursor()
 
-    query = '''SELECT name FROM Interests'''
+    query = '''SELECT name FROM Interests;'''
     all_interests = sqldb.do_sql(query)
 
     return all_interests
