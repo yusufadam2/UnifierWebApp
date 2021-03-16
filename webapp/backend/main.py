@@ -112,7 +112,7 @@ def logout():
 
 
 @app.route('/api/readProfile', methods=['GET'])
-def read_profile:
+def read_profile():
     conn = sqldb.try_open_conn()
     assert conn is not None
     cur = conn.cursor()
@@ -148,7 +148,7 @@ def read_profile:
 
 #update interests left to do
 @app.route('/api/updateProfile', methods=['GET'])
-def update_profile:
+def update_profile():
     conn = sqldb.try_open_conn()
     assert conn is not None
     cur = conn.cursor()
@@ -209,7 +209,7 @@ def update_profile:
 
 
 @app.route('/api/sendMessage', methods=['POST'])
-def send_message:
+def send_message():
     conn = sqldb.try_open_conn()
     assert conn is not None
     cur = conn.cursor()
@@ -243,7 +243,7 @@ def send_message:
 
 
 @app.route('/api/fetchMessages', methods=['GET'])
-def fetch_messages:
+def fetch_messages():
     conn = sqldb.try_open_conn()
     assert conn is not None
     cur = conn.cursor()
