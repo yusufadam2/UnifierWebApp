@@ -285,9 +285,9 @@ def fetch_all_interests:
     cur = conn.cursor()
 
     query = '''SELECT name FROM Interests'''
-    allInterests = sqldb.do_sql(query)
+    all_interests = sqldb.do_sql(query)
 
-    return allInterests
+    return all_interests
 
 
 
