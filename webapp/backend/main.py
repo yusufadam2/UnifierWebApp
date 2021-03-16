@@ -2,6 +2,7 @@ import os
 
 import crypto
 import sqldb
+import datetime
 
 from flask import json, request, Flask, session, redirect, url_for
 from flask_session import Session
@@ -45,7 +46,7 @@ def register():
     if email is None or username is None or password is None:
         return app.response_class(status=400)
 
-    query = 'SELECT * FROM UserAuth WHERE username LIKE ? OR email LIKE ?'
+    query = 'SELECT * FROM UserAuth WHERE username LIKE ? OR email LIKE ?;'
     parameters = (username, email)
     existing_user = sqldb.do_sql(cur, query, parameters)
 
@@ -56,7 +57,8 @@ def register():
     print(f'Registering user: {username} ({email}) with password {password}')
 
     query = 'INSERT INTO UserAuth (username, email, hash, salt) VALUES (?,?,?,?,?);'
-    sqldb.do_sql(cur, query, (username, email, *crypto.hash_secret(password)))
+    parameters = (username, email, *crypto.hash_secret(password))
+    sqldb.do_sql(cur, query, parameters)
 
     print(f'Succesfuly registered user: {username} ({email})')
 
