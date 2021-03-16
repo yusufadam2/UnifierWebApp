@@ -2,9 +2,7 @@
 This module provides user matching functionality.
 """
 
-__all__ = [
-    'n_rand_matches', 'n_best_matches'
-]
+__all__ = ['n_rand_matches', 'n_best_matches']
 
 import random
 

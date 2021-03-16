@@ -1,32 +1,53 @@
+"""
+This module allows for reading and writing conversations history files.
+"""
+
+__all__ = ['read_messages', 'write_message']
+
 import datetime
 import os
 
-def read_messages(fpath, from_date):
+
+def read_messages(fpath: str, from_date: datetime.datetime):
+    """
+    Reads all history files in the given fpath, returning the messages 
+    as a list of (date, uid, msg) tuples.
+    """
 	contents = []
-	end_date = datetime.datetime.now()
 
-	while from_date <= end_date:  
-		date_str = from_date.strftime('%d-%m-%Y')  
-        
-		with open('{}/{}.conv'.format(fpath,date_str),'r') as conversation:
-			for line in message:
-				contents.append(line.split(';'))
+    start_date = datetime.datetime(from_date.year, from_date.month, from_date.day)
+	now = datetime.datetime.now()
+    end_date = datetime.datetime(now.year, now.month, now.day)
 
-		from_date += datetime.timedelta(days=1)
+    while start_date <= end_date:
+		formatted_date = from_date.strftime('%d-%m-%Y')
+        conversation_file = f'{fpath}/{formatted_date}.conv'
+
+		with open(conversation_file, 'r') as conversation:
+			for line in conversation:
+				time, uid, message = line.split(';', maxsplit=2)
+                contents.append((time, uid, message))
+
+		start_date += datetime.timedelta(days=1)
 
 	return contents
 
 
-def write_message(fpath, date, uid, message):
-	date_file = f'{date}.conv'
+def write_message(fpath: str, date: datetime.datetime, uid: int, message: str):
+    """
+    Appends the given message to the correct history file in the given 
+    fpath in the format: 'date;uid;msg'
+    """
+    formatted_date = date.strftime('%d-%m-%Y')
+    formatted_time = date.strftime('%H-%M-%S')
 
 	if not os.path.isdir(fpath):
-		os.makedirs(fpath)
+		os.mkdir(fpath)
 
-	date_path = fpath+'/'+date_file
+    conversation_file = f'{fpath}/{formatted_date}.conv'
+	if not os.path.isfile(conversation_file):
+		os.mknod(conversation_file)
 
-	if os.path.isfile(date_file):
-		os.mknod(date_path)
+	with open(conversation_file, 'a') as conversation:
+		conversation.write(f'{formatted_time};{uid};{message}\n')
 
-	with open(date_path, 'a') as conversation:
-		conversation.write(f'{uid};{message}')

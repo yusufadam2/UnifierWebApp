@@ -253,16 +253,16 @@ def fetch_messages:
     uid = request.values.get('uid')
     cid = request.values.get('cid')
     message = request.values.get('message')
-    fromDate = request.values.get('fromDate')
+    from_date = request.values.get('fromDate')
 
     query = '''SELECT converstaionId FROM UsersConversatinsJoin 
     INNER JOIN Users ON UsersConversatinsJoin.userId = Users.id 
     WHERE userId LIKE ? AND converstaionId LIKE ?;'''
 
     parameters = (uid, cid)
-    convoValidation = sqldb.do_sql(cur, query, parameters)
+    conversation = sqldb.do_sql(cur, query, parameters)
 
-    if convoValidation is None:
+    if conversation is None:
         print(f'User does not have access to this conversation!')
         return app.response_class(status=400)
 
@@ -274,8 +274,7 @@ def fetch_messages:
     cur.execute(query, parameters)
     fpath = cur.fetchone()
 
-    msgs_to_read = conversations.read_messages(fpath, fromDate)
-
+    msgs_to_read = conversations.read_messages(fpath, from_date)
 
     return msgs_to_read
 
