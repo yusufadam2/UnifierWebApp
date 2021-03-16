@@ -1,9 +1,8 @@
 import datetime
-import re
 import os
 
-def read_messages(fpath,from_date):
-	contents = ()
+def read_messages(fpath, from_date):
+	contents = []
 	end_date = datetime.datetime.now()
 
 	while from_date <= end_date:  
@@ -11,14 +10,14 @@ def read_messages(fpath,from_date):
         
 		with open('{}/{}.conv'.format(fpath,date_str),'r') as conversation:
 			for line in message:
-				contents.append(line.split(':'))
+				contents.append(line.split(';'))
 
 		from_date += datetime.timedelta(days=1)
 
 	return contents
 
 
-def write_message(fpath,date,uid,message):
+def write_message(fpath, date, uid, message):
 	date_file = f'{date}.conv'
 
 	if not os.path.isdir(fpath):
