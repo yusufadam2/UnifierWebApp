@@ -2,6 +2,7 @@ import os
 
 import crypto
 import sqldb
+import datetime
 
 from flask import json, request, Flask, session, redirect, url_for
 from flask_session import Session
@@ -45,7 +46,7 @@ def register():
     if email is None or username is None or password is None:
         return app.response_class(status=400)
 
-    query = 'SELECT * FROM UserAuth WHERE username LIKE ? OR email LIKE ?'
+    query = 'SELECT * FROM UserAuth WHERE username LIKE ? OR email LIKE ?;'
     parameters = (username, email)
     existing_user = sqldb.do_sql(cur, query, parameters)
 
@@ -56,7 +57,8 @@ def register():
     print(f'Registering user: {username} ({email}) with password {password}')
 
     query = 'INSERT INTO UserAuth (username, email, hash, salt) VALUES (?,?,?,?,?);'
-    sqldb.do_sql(cur, query, (username, email, *crypto.hash_secret(password)))
+    parameters = (username, email, *crypto.hash_secret(password))
+    sqldb.do_sql(cur, query, parameters)
 
     print(f'Succesfuly registered user: {username} ({email})')
 
@@ -251,16 +253,16 @@ def fetch_messages:
     uid = request.values.get('uid')
     cid = request.values.get('cid')
     message = request.values.get('message')
-    fromDate = request.values.get('fromDate')
+    from_date = request.values.get('fromDate')
 
     query = '''SELECT converstaionId FROM UsersConversatinsJoin 
     INNER JOIN Users ON UsersConversatinsJoin.userId = Users.id 
     WHERE userId LIKE ? AND converstaionId LIKE ?;'''
 
     parameters = (uid, cid)
-    convoValidation = sqldb.do_sql(cur, query, parameters)
+    conversation = sqldb.do_sql(cur, query, parameters)
 
-    if convoValidation is None:
+    if conversation is None:
         print(f'User does not have access to this conversation!')
         return app.response_class(status=400)
 
@@ -272,11 +274,21 @@ def fetch_messages:
     cur.execute(query, parameters)
     fpath = cur.fetchone()
 
-    msgs_to_read = conversations.read_messages(fpath, fromDate)
-
+    msgs_to_read = conversations.read_messages(fpath, from_date)
 
     return msgs_to_read
 
+
+@app.route('/api/interests', methods = ['GET'])
+def fetch_all_interests:
+    conn = sqldb.try_open_conn()
+    assert conn is not None
+    cur = conn.cursor()
+
+    query = '''SELECT name FROM Interests;'''
+    all_interests = sqldb.do_sql(query)
+
+    return all_interests
 
 
 
