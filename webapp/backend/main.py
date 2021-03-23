@@ -280,7 +280,7 @@ def fetch_messages():
 
 
 @app.route('/api/interests', methods = ['GET'])
-def fetch_all_interests:
+def fetch_all_interests():
     conn = sqldb.try_open_conn()
     assert conn is not None
     cur = conn.cursor()

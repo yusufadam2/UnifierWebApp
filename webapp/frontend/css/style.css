@@ -4,6 +4,7 @@ body,hr,html {
   padding: 0!important
 }
 
+/*
 h1,h2,h3,h4,h5,h6 {
   line-height: 1.2;
   text-align: center
@@ -16,6 +17,7 @@ hr {
   border-top: 1px solid;
   border-color: inherit
 }
+*/
 
 :root {
   --theme-dark-bg: #32424b;
@@ -23,7 +25,6 @@ hr {
   --theme-dark-text: #eeeeee;
   --theme-dark-link: #65cbb6;
   --theme-dark-link-visited: #65cbb6;
-  /*--theme-dark-link-visited: #799788;*/
   --theme-dark-h1: #65cbb6;
   --theme-dark-h2: #fbf0c1;
   --theme-dark-h3: #d86853;
@@ -40,6 +41,7 @@ hr {
   --theme-heading: var(--theme-dark-heading);
 }
 
+/*
 nav {
   background: var(--theme-bg);
 }
@@ -75,6 +77,7 @@ body {
   min-height: 100%;
   transition: color .2s,background-color .2s
 }
+*/
 
 main {
   height: 100%;
