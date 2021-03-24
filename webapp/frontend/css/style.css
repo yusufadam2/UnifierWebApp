@@ -167,3 +167,49 @@ main {
   background: var(--theme-h2);
   transition: .9s;
 }
+
+body {
+  font-family:montserrat, arial;
+  background-color:#f7f7f7;
+}
+
+.container{
+  padding:20px;
+  width:500px;
+  position:absolute;
+  left:50%;
+  top:30%;
+  transform:translate(-50%,70%);
+  border:2px solid #ccc;
+  border-radius:10px;
+  background:white;
+}
+
+input[type=text],input[type=password] {
+  width:100%;
+  padding:15px;
+  margin:50px 0 22 0;
+  display:inline-block;
+  border:none;
+  background:#f7f7f7;
+  font-family:montserrat.arial;
+}
+
+input [type=text]:focus, input[type=password]:focus {
+  background-color:#ddd;
+  outline:none;
+}
+
+button {
+  background-color:#0eb7f4;
+  color:white;
+  padding:14px 20px;
+  margin:8px 0;
+  border:none;
+  cursor:pointer;
+  width:100%;
+  opacity:0.9;
+  font-size:16px;
+  font-family: montserrat,arial;
+  border-radius:10px;
+}
