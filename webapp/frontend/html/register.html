@@ -1,16 +1,62 @@
-<form action="">
+<script>
+    function onRegistrationSubmit() {
+        const form = document.getElementById('registrationForm');
+
+        const headers = ['Content-Type', 'application/x-www-form-urlencoded'];
+        const body = new FormData(form);
+
+        function onSuccess(xhr, xhrResponse, xhrResponseType) {
+            console.log(`Successfully registered!`);
+            window.location.replace('/login.html');
+        }
+
+        function onFailure(xhr, xhrStatus) {
+            console.log(`Failed to register: ${xhrStatus}`);
+        }
+
+        REST('http://localhost:5000/api/register', 'POST', true, 0, headers, body, onSuccess, onFailure);
+
+        return false;
+    }
+</script>
+
+<script >
+    var check = function() {
+        if (document.getElementById('password').value == document.getElementById('confirm_password').value)
+        {
+            document.getElementById('message').style.color = 'green';
+            document.getElementById('message').innerHTML = 'Passwords match!';
+            document.getElementById("registerBtn").disabled = false;
+        } 
+        else {
+            document.getElementById('message').style.color = 'red';
+            document.getElementById('message').innerHTML = 'Passwords do not match!';
+            document.getElementById("registerBtn").disabled = true;
+        }
+    }
+</script>
+
+<form id="registrationForm" name="registrationForm" onsubmit="return onRegistrationSubmit()">
     <div class="container">
         <h1>Sign up</h1>
         <p>
-            Please enter email and password to create an account
+            Register to start matching with other users!
         </p>
-        <label for="eml"><b>Email address</b></label>
-        <input type="text" name=Email address placeholder="Enter Email" required>
-        <label for="psw"><b>Password</b></label>
-        <input type="password" placeholder="Enter Password" name="psw" required>
+        <label for="email"><b>Email address</b></label>
+        <input type="email" name="email" address placeholder="Enter Email" required>
+
+        <label for="username"><b>Username</b></label>
+        <input type="text" name="username" address placeholder="Enter username" required>
+
+        <label for="password"><b>Password</b></label>
+        <input type="password" placeholder="Enter Password" name="password" id="password" onkeyup="check();" required>
+
+        <label for="confirm_password"><b>Confirm Password</b></label>
+        <input type="password" placeholder="Confirm Password" name="confirm_password" id="confirm_password" onkeyup="check();" required>
+        <span id='message'></span>
         <p>
-            By creating an account you agree to our <a href="a">Terms& Privacy</a>
+            By creating an account you agree to our <a href="a">Terms of Service & Privacy Policy</a>
         </p>
-        <button type="submit" class="btn">Sign Up</button>
+        <button type="submit" class="btn" name="registerBtn" id="registerBtn" disabled="disabled">Sign Up</button>
     </div>
 </form>
