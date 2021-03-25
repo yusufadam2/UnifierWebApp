@@ -54,7 +54,6 @@
 
         const headers = ['Content-Type', 'application/x-www-form-urlencoded'];
         const body = new FormData(form);
-        REST('http://localhost:5000/api/login', 'POST', true, 0, headers, body, onSuccess, onFailure);
 
         function onSuccess(xhr, xhrResponse, xhrResponseType) {
             console.log(`Succeed login: ${xhrResponse}`);
@@ -64,6 +63,8 @@
         function onFailure(xhr, xhrStatus) {
             console.log(`Failed to login: ${xhrStatus}`);
         }
+
+        REST('http://localhost:5000/api/login', 'POST', true, 0, headers, body, onSuccess, onFailure);
 
         return false;
     }
