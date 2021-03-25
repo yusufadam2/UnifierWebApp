@@ -4,7 +4,7 @@ import crypto
 import sqldb
 import datetime
 
-from flask import json, request, Flask, session, redirect, url_for
+from flask import abort, json, request, Flask, session, redirect, url_for
 from flask_session import Session
 from datetime import datetime
 
@@ -86,11 +86,9 @@ def login():
         if crypto.verify_secret(password, user_hash, user_salt):
             print(f'[user-{uid}] Logged in!')
             session['uid'] = uid
-            redirect('/')
-
             return app.response_class(status=200)
 
-    return app.response_class(status=400)
+    return app.response_class(status=401)
 
 
 # TODO(mikolaj): implement csrf protection

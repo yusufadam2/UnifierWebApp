@@ -16,6 +16,7 @@ function REST(url, method, isAsync, timeoutMs,
               onprogress = null,
               ontimeout = null) {
   const xhr = new XMLHttpRequest();
+  console.log(`Method: ${method}, URL: ${url}, Async? ${isAsync}, Timeout: ${timeoutMs}`);
   xhr.open(method, url, isAsync);
   xhr.timeout = timeoutMs;
 
