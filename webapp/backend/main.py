@@ -7,6 +7,7 @@ import datetime
 from flask import abort, json, request, Flask, session, redirect, url_for
 from flask_session import Session
 from datetime import datetime
+from flask_cors import CORS, cross_origin
 
 
 # TODO(mikolaj): remove static_* parameters for production
@@ -23,10 +24,12 @@ SESSION_TYPE = 'filesystem'
 SECRET_KEY = b'\x11\xe7\x18\xbd\xf1\xban&a\x9ap\xa5\xdbc\xb2\xfa'
 
 app.config.from_object(__name__)
+app.config['CORS_HEADERS'] = 'Content-Type'
 sess = Session()
 
 
 @app.route('/')
+@cross_origin()
 def main():
     return app.send_static_file('index.html')
 
@@ -67,6 +70,7 @@ def register():
 
 # TODO(mikolaj): implement csrf protection
 @app.route('/api/login', methods=['POST'])
+@cross_origin()
 def login():
     conn = sqldb.try_open_conn()
     assert conn is not None
@@ -142,6 +146,8 @@ def read_profile():
     profileInterests = sqldb.do_sql(cur, query, profileInterestsId)
 
     finalProfile =  (profile + profilePic + profileInterests)
+
+    finalProfile = list(finalProfile)
 
     return finalProfile
 
@@ -219,8 +225,8 @@ def send_message():
     message = request.values.get('message')
     date_time = datetime.utcnow()
 
-    query = '''SELECT converstaionId FROM UsersConversatinsJoin 
-    INNER JOIN Users ON UsersConversatinsJoin.userId = Users.id 
+    query = '''SELECT converstaionId FROM UsersConversationsJoin 
+    INNER JOIN Users ON UsersConversationsJoin.userId = Users.id 
     WHERE userId LIKE ? AND converstaionId LIKE ?;'''
 
     parameters = (uid, cid)
@@ -231,7 +237,7 @@ def send_message():
         return app.response_class(status=400)
 
     query = '''SELECT fpath FROM Conversations 
-    INNER JOIN UsersConversatinsJoin ON UsersConversatinsJoin.converstaionId = Conversations.id 
+    INNER JOIN UsersConversationsJoin ON UsersConversationsJoin.converstaionId = Conversations.id 
     WHERE id LIKE ?;'''
 
     parameters = (cid,)
@@ -253,8 +259,8 @@ def fetch_messages():
     message = request.values.get('message')
     from_date = request.values.get('fromDate')
 
-    query = '''SELECT converstaionId FROM UsersConversatinsJoin 
-    INNER JOIN Users ON UsersConversatinsJoin.userId = Users.id 
+    query = '''SELECT converstaionId FROM UsersConversationsJoin 
+    INNER JOIN Users ON UsersConversationsJoin.userId = Users.id 
     WHERE userId LIKE ? AND converstaionId LIKE ?;'''
 
     parameters = (uid, cid)
@@ -265,7 +271,7 @@ def fetch_messages():
         return app.response_class(status=400)
 
     query = '''SELECT fpath FROM Conversations 
-    INNER JOIN UsersConversatinsJoin ON UsersConversatinsJoin.converstaionId = Conversations.id 
+    INNER JOIN UsersConversationsJoin ON UsersConversationsJoin.converstaionId = Conversations.id 
     WHERE id LIKE ?;'''
 
     parameters = (cid,)
@@ -284,9 +290,37 @@ def fetch_all_interests():
     cur = conn.cursor()
 
     query = '''SELECT name FROM Interests;'''
-    all_interests = sqldb.do_sql(query)
+    all_interests = sqldb.do_sql(cur, query)
 
     return all_interests
+
+@app.rout('/api/friends', methods = ['GET'])
+def fetch_all_friends():
+    conn = sqldb.try_open_conn()
+    assert conn is not None
+    cur = conn.cursor()   
+
+    uid = request.values.get('uid')
+
+    query = '''SELECT conversationId FROM UsersConversationsJoin WHERE userId LIKE ?;'''
+    parameters = (uid,)
+    conversations = sqldb.do_sql(cur, query, parameters)
+
+    if conversations is None:
+        return []
+
+    conversations = list(conversations)
+
+    friendsId = []
+
+    query = '''SELECT userId FROM UsesConversationsJoin WHERE userId <> ? AND conversationId LIKE ?;'''
+
+    for i in range(len(conversations)):
+        parameters = (uid, conversations[i])
+        friend = sqldb.do_sql(cur, query, parameters)
+        friendsId.append(friend)
+
+    return friendsId
 
 
 
