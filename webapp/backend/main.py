@@ -7,7 +7,7 @@ import datetime
 from flask import abort, json, request, Flask, session, redirect, url_for
 from flask_session import Session
 from datetime import datetime
-from flask_cors import CORS, cross_origin
+#from flask_cors import CORS, cross_origin
 
 
 # TODO(mikolaj): remove static_* parameters for production
@@ -24,12 +24,12 @@ SESSION_TYPE = 'filesystem'
 SECRET_KEY = b'\x11\xe7\x18\xbd\xf1\xban&a\x9ap\xa5\xdbc\xb2\xfa'
 
 app.config.from_object(__name__)
-app.config['CORS_HEADERS'] = 'Content-Type'
+#app.config['CORS_HEADERS'] = 'Content-Type'
 sess = Session()
 
 
 @app.route('/')
-@cross_origin()
+#@cross_origin()
 def main():
     return app.send_static_file('index.html')
 
@@ -70,7 +70,7 @@ def register():
 
 # TODO(mikolaj): implement csrf protection
 @app.route('/api/login', methods=['POST'])
-@cross_origin()
+#@cross_origin()
 def login():
     conn = sqldb.try_open_conn()
     assert conn is not None
@@ -294,7 +294,7 @@ def fetch_all_interests():
 
     return all_interests
 
-@app.rout('/api/friends', methods = ['GET'])
+@app.route('/api/friends', methods = ['GET'])
 def fetch_all_friends():
     conn = sqldb.try_open_conn()
     assert conn is not None
