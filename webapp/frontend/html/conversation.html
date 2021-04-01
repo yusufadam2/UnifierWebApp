@@ -1,122 +1,178 @@
-<link href="/css/conversation.css" rel="stylesheet" />
-<script>
-    document.getElementsByTagName('body').height=window.innerHeight;
-</script>
 <style>
-    .placeholder-img {
-        border-radius: 20px;
-        vertical-align: middle;
+    #chatPeerInfo {
+        background: red;
+    }
+
+    #chatInfo {
+        background: green;
+    }
+
+    #chatHistory {
+        background: blue;
+        list-style: none;
+    }
+
+    #chatHistory > .msg {
+    }
+
+    #chatHistory > .msg-local {
+        background: pink;
+    }
+
+    #chatHistory > .msg-remote {
+        background: purple;
+    }
+
+    #chatHistory > .date-separator {
+        display: flex;
+        align-items: center;
+        text-align: center;
+    }
+
+    #chatHistory > .date-separator::before, #chatHistory > .date-separator::after {
+        content: '';
+        flex: 1;
+        border-bottom: 1px solid #000;
+    }
+
+    #chatHistory > .date-separator:not(:empty)::before {
+        margin-right: .25em;
+    }
+
+    #chatHistory > .date-separator:not(:empty)::after {
+        margin-left: .25em;
+    }
+
+    #chatExit {
+        background: brown;
+    }
+
+    #chatMsgInput {
+        background: yellow;
+    }
+
+    #chatMsgSubmit {
+        background: orange;
     }
 </style>
-<body class="box">
-    <div class="leftbar">
-        <ul>
-            <li><i class="fas fa-user"></i></li>
-            <li><i class="fas fa-users"></i></li>
-            <li><i class="fas fa-smile"></i></li>
-            <li><i class="fas fa-envelope"></i></li>
-            <li><i class="fas fa-bell"></i></li>
-            <li><i class="fas fa-calendar-alt"></i></li>
-            <li><i class="fas fa-power-off"></i></li>
-        </ul>
-    </div>
-    <div class="container">
-        <div class="chatbox">
-            <div class="chatleft">
-                <div class="top">
-                    <i class="fas fa-bars" style="font-size: 1.4em"></i>
-                    <input type="text" placeholder="search" style="width: 140px; height: 36px; margin-left: 25px;">
-                    <button class="searchbtn"></style><i class="fas fa-search"></i></button>
-                </div>
-                <div class="center">
-                    <ul>
-                        <li>
-                            <img class="placeholder-img" src="http://placehold.it/40x40">
-                            <span style="margin-left: 10px;"></span>
-                        </li>
-                        <li>
-                            <img class="placeholder-img" src="http://placehold.it/40x40">
-                            <span style="margin-left: 10px;"></span>
-                        </li>
-                        <li>
-                            <img class="placeholder-img" src="http://placehold.it/40x40">
-                            <span style="margin-left: 10px;"></span>
-                        </li>
-                        <li>
-                            <img class="placeholder-img" src="http://placehold.it/40x40">
-                            <span style="margin-left: 10px;"></span>
-                        </li>
-                        <li>
-                            <img class="placeholder-img" src="http://placehold.it/40x40">
-                            <span style="margin-left: 10px;"></span>
-                        </li>
-                        <li>
-                            <img class="placeholder-img" src="http://placehold.it/40x40">
-                            <span style="margin-left: 10px;"></span>
-                        </li>
-                        <li>
-                            <img class="placeholder-img" src="http://placehold.it/40x40">
-                            <span style="margin-left: 10px;"></span>
-                        </li>
-                        <li>
-                            <img class="placeholder-img" src="http://placehold.it/40x40">
-                            <span style="margin-left: 10px;"></span>
-                        </li>
-                        <li>
-                            <img class="placeholder-img" src="http://placehold.it/40x40">
-                            <span style="margin-left: 10px;"></span>
-                        </li>
-                        <li>
-                            <img class="placeholder-img" src="http://placehold.it/40x40">
-                            <span style="margin-left: 10px;"></span>
-                        </li>
-                        <li>
-                            <img class="placeholder-img" src="http://placehold.it/40x40">
-                            <span style="margin-left: 10px;"></span>
-                        </li>
-                        <li>
-                            <img class="placeholder-img" src="http://placehold.it/40x40">
-                            <span style="margin-left: 10px;"></span>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-            <div class="chatright">
-                <div class="top">
-                    <img class="placeholder-img" src="http://placehold.it/40x40">
-                    <span style="margin-left: 20px;"></span>
-                    <i class="fas fa-ellipsis-v" style="font-size: 1.4em; position: absolute; right: 20px; color: gray;"></i>
-                </div>
-                <div class="center">
-                    <ul>
-                        <li class="msgleft">
-                            <img class="placeholder-img"c="http://placehold.it/40x40">
-                            <p class="msgcard">This message on the left!</p>
-                        </li>
-                        <li class="msgright">
-                            <img class="placeholder-img"c="http://placehold.it/40x40">
-                            <p class="msgcard">This message on the right!</p>
-                        </li>
-                        <li class="msgleft">
-                            <img class="placeholder-img"c="http://placehold.it/40x40">
-                            <p class="msgcard">This is a long message! This is a long message! This is a long left message!</p>
-                        </li>
-                        <li class="msgright">
-                            <img class="placeholder-img"c="http://placehold.it/40x40">
-                            <p class="msgcard">This message on the right!</p>
-                        </li>
-                        <li class="msgleft">
-                            <img class="placeholder-img"c="http://placehold.it/40x40">
-                            <p class="msgcard">This is a long message! This is a long message! This is a long left message!</p>
-                        </li>
-                    </ul>
-                </div>
-                <div class="footer">
-                    <textarea maxlength="800" rows="5" cols="40" style="width: 100%; resize: none; border: none; " placeholder="something something long test field..."></textarea>
-                    <button class="sendbtn">发送</button>
-                </div>
-            </div>
+<div class="container-fluid d-flex flex-column" style="height: 100%;">
+    <div class="row flex-shrink-1" id="chatHeader">
+        <div class="col" id="chatPeerInfo">
+            Talking with John Doe
+        </div>
+        <div class="col" id="chatInfo">
+            Last Sent Message: xx/yy/zzzz | Other Info
         </div>
     </div>
-</body>
-</html>
+    <div class="row flex-grow-1 flex-shrink-1" id="chatBody">
+        <ul class="col" id="chatHistory">
+            <li class="msg msg-local">History</li>
+            <li class="msg msg-local">History 2</li>
+            <div class="date-separator">New Date</div>
+            <li class="msg msg-remote">Remote Message</li>
+        </ul>
+        <template id="chatDateSeparatorTemplate">
+            <div class="date-separator"></div>
+        </template>
+        <template id="chatMsgTemplate">
+            <li>
+                <span></span> | <span></span>
+            </li>
+        </template>
+    </div>
+    <div class="row flex-shrink-1" id="chatFooter">
+        <button class="col-2" id="chatExit">
+            Leave
+        </button>
+        <textarea class="col-8" id="chatMsgInput" placeholder="Enter a message...">
+        </textarea>
+        <button class="col-2" id="chatMsgSubmit">
+            Send
+        </button>
+    </div>
+</div>
+<script>
+    if (typeof Storage === undefined) {
+        console.log(`Cannot find storage object!`);
+    }
+
+    function formatTimestamp(date) {
+        const second = date.getSeconds(), minute = date.getMinutes(), hour = date.getHours();
+        const day = date.getDate(), month = date.getMonth(), year = date.getFullYear();
+
+        const months = [
+            'January',
+            'February',
+            'March',
+            'April',
+            'May',
+            'June',
+            'July',
+            'August',
+            'September',
+            'October',
+            'November',
+            'December'
+        ];
+
+        return [
+            `${new String(hour).padStart(2, '0')}:${new String(minute).padStart(2, '0')}`,
+            `${new String(day).padStart(2, '0')} ${months[month]} ${year}`
+        ];
+    }
+
+    const chatHistory = document.getElementById('chatHistory');
+    const chatDateSeparatorTemplate = document.getElementById('chatDateSeparatorTemplate');
+    const chatMessageTemplate = document.getElementById('chatMsgTemplate');
+
+    let lastReceivedMessageDate = '';
+
+    function createChatMessage(timestamp, datestamp, content, isLocal) {
+        const message = chatMessageTemplate.content.firstElementChild.cloneNode(true);
+
+        message.className += 'msg ';
+        message.className += isLocal ? 'msg-local ' : 'msg-remote ';
+        
+        const templateSegments = message.querySelectorAll('span');
+        const messageTimestamp = templateSegments[0];
+        messageTimestamp.textContent = timestamp;
+
+        const messageContent = templateSegments[1];
+        messageContent.textContent = content;
+
+        if (lastReceivedMessageDate < datestamp) {
+            lastReceivedMessageDate = datestamp;
+
+            const dateSeparator = chatDateSeparatorTemplate.content.firstElementChild.cloneNode(true);
+
+            dateSeparator.textContent = datestamp;
+
+            chatHistory.appendChild(dateSeparator);
+        }
+
+        chatHistory.appendChild(message);
+    }
+
+    const quitButton = document.getElementById('chatExit');
+    quitButton.addEventListener('click', function(e) {
+        console.log(`Quitting chat!`);
+    });
+
+    const messageSource = document.getElementById('chatMsgInput');
+
+    const sendButton = document.getElementById('chatMsgSubmit');
+    sendButton.addEventListener('click', function(e) {
+        const date = new Date();
+        const [timestamp, datestamp] = formatTimestamp(date);
+        createChatMessage(timestamp, datestamp, messageSource.value, true);
+        messageSource.value = '';
+        console.log(`Sending message!`);
+    });
+
+    setInterval(function() {
+        // TODO(mikolaj): fetch messages from the api
+        const date = new Date();
+        const [timestamp, datestamp] = formatTimestamp(date);
+        createChatMessage(timestamp, datestamp, 'asd', false);
+    }, 2500);
+</script>
