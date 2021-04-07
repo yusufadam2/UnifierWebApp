@@ -13,11 +13,21 @@ def read_messages(fpath: str, from_date: datetime.datetime):
     Reads all history files in the given fpath, returning the messages 
     as a list of (date, uid, msg) tuples.
     """
-	contents = []
 
+
+	contents = []
     start_date = datetime.datetime(from_date.year, from_date.month, from_date.day)
 	now = datetime.datetime.now()
     end_date = datetime.datetime(now.year, now.month, now.day)
+
+    if from_date == None:
+        find_all_conversation = os.listdir(fpath)
+        for conversation_id in find_all_conversation:
+            if not os.path.isdir(conversation_i):
+                with open(conversation_id, 'r') as conversation:
+                    for line in conversation:
+                        time, uid, message = line.split(';', maxsplit=2)
+                        contents.append((time, uid, message))
 
     while start_date <= end_date:
 		formatted_date = from_date.strftime('%d-%m-%Y')
