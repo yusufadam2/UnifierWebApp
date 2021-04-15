@@ -57,7 +57,7 @@
 
                 document.getElementById("friendList").lastElementChild.innerHTML = friend[4];
                 document.getElementById("friendList").lastElementChild.src = friend[7];
-                document.getElementById("friendList").lastElementChild.href = '#';
+                //document.getElementById("friendList").lastElementChild.href = '#';
             }
         }
 
@@ -112,13 +112,14 @@
     .online {
         color: #008000;
     }
+
 </style>
-<div class="container-fluid text-center">
+<div class="container-fluid text-center ">
     <div class="page-header">
         <h1>Dashboard</h1>
     </div>
     <div class="row equal">
-        <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+        <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
             <div class="card">
                 <div class="card-header">
                     <h1>Profile</h1>
@@ -138,22 +139,13 @@
                     </li>
                 </ul>
             </div>
-        </div>
-        <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
-            <div class="card">
-                <div class="card-header">
-                    <h1>Messages</h1>
-                </div>
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item">No new messages</li>
-                </ul>
-            </div>
             <br>
             <div>
-                <a href="/conversation.html"><button type="button" class="btn btn-primary btn-lg">All Messages</button></a>
+                <a href="/conversation.html"><button type="button" class="btn btn-primary btn-lg">Messages</button></a>
             </div>
+            <br>
         </div>
-        <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+        <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
             <div class="card">
                 <div class="card-header">
                     <h1>Friends List</h1>
@@ -164,7 +156,7 @@
                             <img src="/friend-1.png" class="flex-shrink-0 mr-3 mt-3 rounded-circle"
                                 style="width: 60px;height:60px;">
                             <div class="d-flex align-items-center">
-                                <a href="#" class="align-self-center profile-link online">
+                                <a href="/conversation.html" class="align-self-center profile-link online">
                                     <h4 class="media-heading" id="">You currently have no friends</h4>
                                 </a>
                             </div>
@@ -176,6 +168,7 @@
             <div>
                 <a href="/match.html"><button type="button" class="btn btn-primary btn-lg">Match</button></a>
             </div>
+            <br>
         </div>
     </div>
 </div>
