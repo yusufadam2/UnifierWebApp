@@ -5,6 +5,42 @@
         margin-right: auto;
     }
 </style>
+<script>
+  function onEditSubmit() {
+      const headers = [];
+      const body = null;
+
+      function onSuccess(xhr, xhrResponse, xhrResponseType) {
+          console.log(`Successfully read the profile!`);
+      }
+
+      function onFailure(xhr, xhrStatus) {
+          console.log(`Failed to read profile: ${xhrStatus}`);
+      }
+
+      REST('http://localhost:5000/api/readProfile', 'POST', true, 0, headers, body, onSuccess, onFailure);
+
+  function onSaveSubmit() {
+    const form = document.getElementById('profileForm');
+
+    const headers = ['Content-Type', 'application/x-www-form-urlencoded'];
+    const body = new FormData(form);
+
+    function onSuccess(xhr, xhrResponse, xhrResponseType) {
+        console.log(`Saved profile: ${xhrResponse}`);
+    }
+
+    function onFailure(xhr, xhrStatus) {
+        console.log(`Failed to save: ${xhrStatus}`);
+    }
+
+    REST('http://localhost:5000/api/updateProfile', 'POST', true, 0, headers, body, onSuccess, onFailure);
+
+    return false;
+  }
+
+  onEditSubmit()
+</script>
 <section class="Form my-4 mx-5">
     <div class="container">
         <div class="row no-gutters">
@@ -15,7 +51,7 @@
             <div class="col px-1 pt-2">
                 <a class="logo"><img class="center-block" src="logo.jpg" alt="Unifier" style="width: 200px"></a>
                 <h4><br>Edit Profile</h4>
-                <form>
+                <form id="profileForm">
                     <div class="form-row p-2">
                         <p>Name</p>
                         <div contenteditable="true" class="editableBox">
@@ -44,7 +80,7 @@
                         </div>
                         <div class="col text-center">
                             <button type="button" class="btn1 mt-3 mb-3">Return</button>
-                            <button type="button" class="btn2 mt-3 mb-3">Save</button>
+                            <button type="button" class="btn2 mt-3 mb-3" onsubmit="return onSaveSubmit()">Save</button>
                         </div>
                     </div>
                 </form>
