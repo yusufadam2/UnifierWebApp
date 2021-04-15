@@ -37,10 +37,55 @@
 </script>
 
 
+<style>
+body {
+  font-family:montserrat, arial;
+  background-color:#65cbb6;
+}
+.container2{
+  padding:20px;
+  width:500px;
+  position:absolute;
+  left:50%;
+  top:30%;
+  transform:translate(-50%,-10%);
+  border:2px solid #ccc;
+  border-radius:10px;
+  background:#fbf0c1;
+}
+
+input[type=text],input[type=password], input[type=email]{
+  width:100%;
+  padding:15px;
+  margin:50px 0 22 0;
+  display:inline-block;
+  border:none;
+  background:#f7f7f7;
+  font-family:montserrat.arial;
+}
+input [type=text]:focus, input[type=password]:focus, input[type=email]:focus{
+  background-color:#ddd;
+  outline:none;
+}
+button{
+  background-color:#0eb7f4;
+  color:white;
+  padding:14px 20px;
+  margin:8px 0;
+  border:none;
+  cursor:pointer;
+  width:100%;
+  opacity:0.9;
+  font-size:16px;
+  font-family: montserrat,arial;
+  border-radius:10px;
+}
+</style>
+
 <form id="registrationForm" name="registrationForm" onsubmit="return onRegistrationSubmit()">
-    <div class="container">
-        <h1>Sign up</h1>
-        <p>
+    <div class="container2">
+        <h1 class="text-center">Sign up</h1>
+        <p class="text-center">
             Register to start matching with other users!
         </p>
         <label for="email"><b>Email address</b></label>
@@ -56,8 +101,9 @@
         <input type="password" placeholder="Confirm Password" name="confirm_password" id="confirm_password" onkeyup="check();" required>
         <span id='message'></span>
         <p>
-            By creating an account you agree to our <a href="a">Terms of Service & Privacy Policy</a>
+            By creating an account you agree to our <a href="/legal.html">Terms of Service & Privacy Policy</a>
         </p>
         <button type="submit" class="btn" name="registerBtn" id="registerBtn" disabled="disabled">Sign Up</button>
     </div>
 </form>
+
