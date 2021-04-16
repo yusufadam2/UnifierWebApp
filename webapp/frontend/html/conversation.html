@@ -57,19 +57,12 @@
 </style>
 <div class="container-fluid d-flex flex-column" style="height: 100%;">
     <div class="row flex-shrink-1" id="chatHeader">
-        <div class="col" id="chatPeerInfo">
-            Talking with John Doe
-        </div>
+        <!--<div class="col" id="chatPeerInfo"></div>-->
         <div class="col" id="chatInfo">
-            Last Sent Message: xx/yy/zzzz | Other Info
         </div>
     </div>
     <div class="row flex-grow-1 flex-shrink-1" id="chatBody">
         <ul class="col" id="chatHistory">
-            <li class="msg msg-local">History</li>
-            <li class="msg msg-local">History 2</li>
-            <div class="date-separator">New Date</div>
-            <li class="msg msg-remote">Remote Message</li>
         </ul>
         <template id="chatDateSeparatorTemplate">
             <div id="datestamp" class="date-separator"></div>
@@ -92,6 +85,14 @@
     </div>
 </div>
 <script>
+    //const chatPeerInfo = document.getElementById('chatPeerInfo');
+    const chatInfo = document.getElementById('chatInfo');
+
+    function updateUi(lastReceivedDate, lastReceivedTime) {
+        //chatPeerInfo.textContent = `Chatting with ${peer}`;
+        chatInfo.textContent = `Last Update at ${lastReceivedTime}@${lastReceivedDate}`;
+    }
+
     const months = [
         'January',
         'February',
@@ -185,6 +186,7 @@
             lastMessageTimeIndex = messageTimeIndex;
         }
 
+        updateUi(datestamp, timestamp);
         chatHistory.appendChild(message);
     }
 
@@ -224,7 +226,7 @@
         REST(`/api/sendMessage?content=${messageSource.value}`, 'POST', true, 0, headers, body, onSuccess, onFailure);
     });
 
-    setInterval(function() {
+    function fetchChatMessages() {
         function onSuccess(xhr, xhrResponse, xhrResponseType) {
             const response = JSON.parse(xhrResponse);
             
@@ -236,11 +238,13 @@
         function onFailure(xhr, xhrResponse) {
         }
 
-        const headers = [['Content-Type', 'multipart/form-data']];
-        const body = new FormData();
-        //body.set('fromDate', date); // TODO(mikolaj): forms reee
+        const headers = [];
+        const body = null;
         const params = `fromDate=${lastMessageDateIndex}&fromTime=${lastMessageTimeIndex}`;
 
         REST(`/api/fetchMessages?${params}`, 'GET', true, 0, headers, body, onSuccess, onFailure);
-    }, 1000);
+    }
+
+    setInterval(fetchChatMessages, 1000);
+    fetchChatMessages();
 </script>

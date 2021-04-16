@@ -33,8 +33,6 @@ def read_messages(fpath: str, from_date_index: int, from_time_index: int):
             if from_date_index is not None and from_date_index > date_index:
                 continue
 
-            print(from_date_index, date_index)
-
             with open(f'{current}/{conversation_file}', 'r') as conversation:
                 for line in conversation:
                     timestamp, datestamp, uid, message = line.split(';', maxsplit=3)
