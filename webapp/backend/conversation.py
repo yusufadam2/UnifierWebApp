@@ -2,52 +2,66 @@
 This module allows for reading and writing conversations history files.
 """
 
-__all__ = ['read_messages', 'write_message']
+__all__ = ['ensure_fpath', 'read_messages', 'write_message']
 
 import datetime
 import os
 
 
-def read_messages(fpath: str, from_date: datetime.datetime):
+def ensure_fpath(fpath: str):
+    """
+    Creates the given fpath if it doesnt already exist.
+    """
+    if not os.path.isdir(fpath):
+        print(f'Creating fpath: {fpath}')
+        os.mkdir(fpath)
+
+
+def read_messages(fpath: str, from_date_index: int, from_time_index: int):
     """
     Reads all history files in the given fpath, returning the messages 
     as a list of (date, uid, msg) tuples.
     """
-	contents = []
+    contents = []
 
-    start_date = datetime.datetime(from_date.year, from_date.month, from_date.day)
-	now = datetime.datetime.now()
-    end_date = datetime.datetime(now.year, now.month, now.day)
+    ensure_fpath(fpath)
 
-    while start_date <= end_date:
-		formatted_date = from_date.strftime('%d-%m-%Y')
-        conversation_file = f'{fpath}/{formatted_date}.conv'
+    for current, dirs, files in os.walk(fpath):
+        for conversation_file in files:
+            date_index = int(conversation_file[:-len('.conv')])
 
-		with open(conversation_file, 'r') as conversation:
-			for line in conversation:
-				time, uid, message = line.split(';', maxsplit=2)
-                contents.append((time, uid, message))
+            if from_date_index is not None and from_date_index > date_index:
+                continue
 
-		start_date += datetime.timedelta(days=1)
+            with open(f'{current}/{conversation_file}', 'r') as conversation:
+                for line in conversation:
+                    timestamp, datestamp, uid, message = line.split(';', maxsplit=3)
+                    time_index = int(f'{timestamp[0:2]}{timestamp[3:]}')
 
-	return contents
+                    if from_time_index is not None and from_time_index >= time_index:
+                        continue
+
+                    contents.append((timestamp, datestamp, uid, message))
+
+    return contents
 
 
 def write_message(fpath: str, date: datetime.datetime, uid: int, message: str):
     """
     Appends the given message to the correct history file in the given 
-    fpath in the format: 'date;uid;msg'
+    fpath in the format: 'time;date;uid;msg'
     """
-    formatted_date = date.strftime('%d-%m-%Y')
-    formatted_time = date.strftime('%H-%M-%S')
+    date_index = int(f'{date.year}{date.month}{date.day}')
 
-	if not os.path.isdir(fpath):
-		os.mkdir(fpath)
+    formatted_date = date.strftime('%d %B %Y')
+    formatted_time = date.strftime('%H:%M')
 
-    conversation_file = f'{fpath}/{formatted_date}.conv'
-	if not os.path.isfile(conversation_file):
-		os.mknod(conversation_file)
+    ensure_fpath(fpath)
 
-	with open(conversation_file, 'a') as conversation:
-		conversation.write(f'{formatted_time};{uid};{message}\n')
+    conversation_file = f'{fpath}/{date_index}.conv'
+    if not os.path.isfile(conversation_file):
+        os.mknod(conversation_file)
+
+    with open(conversation_file, 'a') as conversation:
+        conversation.write(f'{formatted_time};{formatted_date};{uid};{message}\n')
 

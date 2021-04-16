@@ -1,0 +1,22 @@
+<script>
+    function onLogoutSubmit() {
+        const headers = [];
+        const body = null;
+
+        function onSuccess(xhr, xhrResponse, xhrResponseType) {
+            console.log(`Successfully logged out!`);
+            setTimeout(() => { window.location.replace('/index.html'); }, 1000);
+        }
+
+        function onFailure(xhr, xhrStatus) {
+            console.log(`Failed to log out: ${xhrStatus}`);
+        }
+
+        REST('http://localhost:5000/api/logout', 'POST', true, 0, headers, body, onSuccess, onFailure);
+    }
+    onLogoutSubmit();
+</script>
+<div class="container center-text">
+	<h1>Logged out</h1>
+	<p>You've been logged out succesfully<p>
+</div>
