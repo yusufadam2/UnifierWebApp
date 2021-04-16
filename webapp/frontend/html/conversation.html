@@ -1,67 +1,64 @@
 <style>
-    #chatPeerInfo {
-        background: red;
+body {
+        background-color: #32424b !important;
     }
+textarea{
+  width:100%;
+  padding:15px;
+  margin:50px 0 22 0;
+  display:inline-block;
+  border:none;
+  background:#f7f7f7;
+  font-family:montserrat.arial;
+}
+textarea:focus{
+  background-color:#ddd;
+  outline:none;
+}
 
-    #chatInfo {
-        background: green;
-    }
+.container2{
+  padding:20px;
+  width:500px;
+  left:50%;
+  top:30%;
+  border:2px solid #ccc;
+  border-radius:10px;
+  background:#fbf0c1;
+  transform:translate(8%,0%);
+}
 
-    #chatHistory {
-        background: blue;
-        list-style: none;
-    }
+.container3{
+  padding:20px;
+  width:600px;
+  border:2px solid #ccc;
+  border-radius:10px;
+  background:#d86853;
+}
 
-    #chatHistory > .msg {
-    }
+button {
+    color: #32424b !important;
+    background-color: #65cbb6 !important;
+    border-color: #65cbb6 !important;
+}
 
-    #chatHistory > .msg-local {
-        background: pink;
-    }
+button:hover {
+    color: #32424b !important;
+    background-color: #40a893 !important;
+    border-color: #40a893 !important;
+}
 
-    #chatHistory > .msg-remote {
-        background: purple;
-    }
+.translator{
+    transform:translate(0%,100%);
+}
 
-    #chatHistory > .date-separator {
-        display: flex;
-        align-items: center;
-        text-align: center;
-    }
-
-    #chatHistory > .date-separator::before, #chatHistory > .date-separator::after {
-        content: '';
-        flex: 1;
-        border-bottom: 1px solid #000;
-    }
-
-    #chatHistory > .date-separator:not(:empty)::before {
-        margin-right: .25em;
-    }
-
-    #chatHistory > .date-separator:not(:empty)::after {
-        margin-left: .25em;
-    }
-
-    #chatExit {
-        background: brown;
-    }
-
-    #chatMsgInput {
-        background: yellow;
-    }
-
-    #chatMsgSubmit {
-        background: orange;
-    }
 </style>
-<div class="container-fluid d-flex flex-column" style="height: 100%;">
+<div class="container-fluid d-flex flex-column container3 translator" style="height: 100%;">
     <div class="row flex-shrink-1" id="chatHeader">
         <!--<div class="col" id="chatPeerInfo"></div>-->
         <div class="col" id="chatInfo">
         </div>
     </div>
-    <div class="row flex-grow-1 flex-shrink-1" id="chatBody">
+    <div class="row flex-grow-1 flex-shrink-1 container2" id="chatBody">
         <ul class="col" id="chatHistory">
         </ul>
         <template id="chatDateSeparatorTemplate">
