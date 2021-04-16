@@ -73,25 +73,69 @@
          width: 50%;
     }
 </style>
+<script>
+  function fetchMatch() {
+      const headers = [];
+      const body = null;
+
+      function onSuccess(xhr, xhrResponse, xhrResponseType) {
+          console.log(`Successfully fetched profile!`);
+      }
+
+      function onFailure(xhr, xhrStatus) {
+          console.log(`Failed to fetch profile: ${xhrStatus}`);
+      }
+
+      var matchInfo = [];
+      var profileInfo = [];
+      matchInfo = REST('http://localhost:5000/api/fetchMatches', 'GET', true, 0, headers, body, onSuccess, onFailure);
+      var cookie = document.cookie;
+      var baseUrl = 'http://localhost:5000/api/readProfile?'
+      var finalUrl = baseUrl.concat(matchInfo[0])
+      matchInfo = REST(finalUrl, 'GET', true, 0, headers, body, onSuccess, onFailure);
+
+      document.getElementById("unityScore").innerHTML = matchInfo[1];
+      document.getElementById("bioPar").innerHTML = profileInfo[4];
+      document.getElementById("matchImg").src = profileInfo[7];
+  }
+
+  function matched() {
+    const headers = [];
+    const body = null;
+
+    function onSuccess(xhr, xhrResponse, xhrResponseType) {
+        console.log(`Successfully matched!`);
+        setTimeout(() => { window.location.replace('/conversation.html'); }, 1000);
+    }
+
+    function onFailure(xhr, xhrStatus) {
+        console.log(`Failed to match: ${xhrStatus}`);
+    }
+
+    REST('http://localhost:5000/api/logout', 'POST', true, 0, headers, body, onSuccess, onFailure);
+  }
+
+  fetchMatch()
+</script>
 <section class="Form my-4 mx-5">
     <div class="container">
         <div class="row no-gutters">
             <div class= "col-lg-5">
-                <img src= "test.png" class="active img-fluid" alt="">
+                <img id="matchImg" src= "test.png" class="active img-fluid" alt="">
             </div>
             <div class="col-lg-7 px-1 pt-1">
                 <a class="logo"><img src="/logo.jpg" alt="Unifier" style="width: 200px";></a>
-                <h4>You matched!<br>Unity score: n</h4>
+                <h4>You matched!<br>Unity score:</h4><h4 id="unityScore">n</h4>
                 <form>
                     <div class="form-row">
-                        <div class="boxed my-3 p-4">
+                        <div id="bioPar" class="boxed my-3 p-4">
                             Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum
                         </div>
                         <div class="col-lg-7">
-                            <button type="button" class="btn1 mt-3 mb-3">Match</button>
+                            <button type="button" class="btn1 mt-3 mb-3" onsubmit="matched">Match</button>
                         </div>
                         <div class="col-lg-7">
-                            <button type="button" class="btn2 mt-3 mb-3">Pass</button>
+                            <button type="button" class="btn2 mt-3 mb-3" onsubmit="fetchMatch">Pass</button>
                         </div>
                     </div>
                 </form>
