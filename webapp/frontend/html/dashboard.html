@@ -47,7 +47,6 @@
 <div class="container-fluid text-center ">
     <div class="page-header">
         <h1>Dashboard</h1>
-        <button id="apiTest">click me</button>
     </div>
     <div class="row equal">
         <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
@@ -94,6 +93,16 @@
                         </div>
                     </li>
                 </ul>
+                <template id="friendTemplate">
+                    <li class="list-group-item">
+                        <div class="d-flex justify-content-evenly">
+                            <img id="profilePicture" class="flex-shrink-0 mr-3 mt-3 rounded-circle" style="height: 60px; width: 60px;" />
+                            <div class="d-flex align-items-center">
+                                <a id="conversationLink" href="#" class="align-self-center profile-link online"></a>
+                            </div>
+                        </div>
+                    </li>
+                </template>
             </div>
             <br>
             <div>
@@ -104,13 +113,16 @@
     </div>
 </div>
 <script>
+    const profileBio = document.getElementById('bioPar');
+    const profileImage = document.getElementById('bioImg');
+
     function fetchProfile() {
         function onSuccess(xhr, xhrResponse, xhrResponseType) {
             console.log(`Successfully fetched profile!`);
 
             const response = JSON.parse(xhrResponse);
-            document.getElementById('bioPar').innerHTML = response['biography'];
-            document.getElementById('bioImg').src = response['picture'];
+            profileBio.innerHTML = response['biography'];
+            profileImage.src = response['picture'];
         }
 
         function onFailure(xhr, xhrStatus) {
@@ -123,13 +135,61 @@
         REST('/api/readProfile', 'GET', true, 0, headers, body, onSuccess, onFailure);
     }
 
+    const friendList = document.getElementById('friendList');
+    const friendTemplate = document.getElementById('friendTemplate');
+
     function fetchFriends() {
         function onSuccess(xhr, xhrResponse, xhrResponseType) {
             console.log(`Successfully fetched friends!`);
 
             const response = JSON.parse(xhrResponse);
-            for (let friendId of response) {
+            for (let idx in response) {
+                let friendId = response[idx];
                 console.log(friendId);
+
+                function onSuccess(xhr, xhrResponse, xhrResponseType) {
+                    console.log(xhrResponse);
+
+                    const response = JSON.parse(xhrResponse);
+                    console.log(response);
+
+                    const friend = friendTemplate.content.firstElementChild.cloneNode(true);
+                    const profilePicture = friend.querySelector('#profilePicture');
+                    const conversationLink = friend.querySelector('#conversationLink');
+
+                    profilePicture.src = response['picture'];
+
+                    conversationLink.innerHTML = response['username'];
+                    conversationLink.addEventListener('click', function(e) {
+                        console.log(`Starting conversation with ${friendId}`);
+
+                        function onSuccess(xhr, xhrResponse, xhrResponseType) {
+                            window.location.replace('/conversation.html');
+                        }
+
+                        function onFailure(xhr, xhrStatus) {
+                            console.log(`Failed to start conversation with friend ${friendId}: ${xhrStatus}`);
+                        }
+
+                        const headers = [['Content-Type', 'multipart/form-data']];
+                        let body = new FormData();
+                        //body.set('other', friendId); // TODO(mikolaj): why tf do forms not work
+
+                        REST(`/api/startConversation?other=${friendId}`, 'POST', true, 0, headers, body, onSuccess, onFailure);
+                    });
+
+                    friendList.appendChild(friend);
+                }
+
+                function onFailure(xhr, xhrStatus) {
+                    console.log(`Failed to fetch friend ${friendId} profile: ${xhrStatus}`);
+                }
+
+                const headers = [['Content-Type', 'multipart/form-data']];
+                let body = new FormData();
+                //body.set('uid', friendId); // TODO(mikolaj): again, forms dont work >:(
+
+                REST(`/api/readProfile?uid=${friendId}`, 'GET', true, 0, headers, body, onSuccess, onFailure);
             }
         }
 
@@ -138,51 +198,13 @@
         }
 
         const headers = [];
-        const body = null;
+        let body = null;
 
         REST('/api/friends', 'GET', true, 0, headers, body, onSuccess, onFailure);
-/*
-        if (friendsIds.length == 0) {
-            return;
-        }
-
-        else {
-            for (var i = 0; i < friendsIds.length; i++) {
-                if (i != 0) {
-                    var itm = document.getElementById("friendList").lastChild;
-                    var cln = itm.cloneNode(true);
-                    document.getElementById("friendList").appendChild(cln);
-                }
-                
-                var cookie = friendsIds[i];
-                var baseUrl = 'http://localhost:5000/api/readProfile?uid='
-                var finalUrl = baseUrl.concat(cookie)
-                friend = REST(finalUrl, 'GET', true, 0, headers, body, onSuccess, onFailure);
-
-                document.getElementById("friendList").lastElementChild.innerHTML = friend[4];
-                document.getElementById("friendList").lastElementChild.src = friend[7];
-                //document.getElementById("friendList").lastElementChild.href = '#';
-            }
-        }
-*/
     }
 
     fetchProfile();
     fetchFriends();
-
-    document.getElementById('apiTest').addEventListener('click', function(e) {
-        function debug(xhr, xhrResponse, xhrResponseType) {
-            console.log(xhr);
-            console.log(xhrResponse);
-            console.log(xhrResponseType);
-        }
-
-        const headers = [['Content-Type', 'multipart/form-data']];
-        const body = new FormData();
-        body.set('other', 1);
-
-        REST('/api/startConversation', 'POST', true, 0, headers, body, debug, debug);
-    });
 </script>
 
 

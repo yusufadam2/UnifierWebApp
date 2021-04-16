@@ -72,11 +72,11 @@
             <li class="msg msg-remote">Remote Message</li>
         </ul>
         <template id="chatDateSeparatorTemplate">
-            <div class="date-separator"></div>
+            <div id="datestamp" class="date-separator"></div>
         </template>
         <template id="chatMsgTemplate">
             <li>
-                <span></span> | <span></span>
+                <span id="timestamp"></span> | <span id="content"></span>
             </li>
         </template>
     </div>
@@ -122,10 +122,21 @@
 
         const [day, month, year] = datestamp.split(' ');
 
-        return parseInt(`${year}${getMonthIndex(month)}${day}`);
+        return parseInt(`${year}${parseInt(getMonthIndex(month))+1}${day}`);
     }
 
-    let lastMessageIndex = datestampIndex(null);
+    function timestampIndex(timestamp) {
+        if (timestamp === null) {
+            return -1;
+        }
+
+        const [hour, minute] = timestamp.split(':');
+
+        return parseInt(`${hour}${minute}`);
+    }
+
+    let lastMessageDateIndex = -1;
+    let lastMessageTimeIndex = -1;
 
     function formatTimestamp(date) {
         if (date === null) {
@@ -151,23 +162,27 @@
         message.className += 'msg ';
         message.className += isLocal ? 'msg-local ' : 'msg-remote ';
         
-        const templateSegments = message.querySelectorAll('span');
-        const messageTimestamp = templateSegments[0];
+        const messageTimestamp = message.querySelector('#timestamp');
+        const messageContent = message.querySelector('#content');
+
+        messageContent.textContent = content;
         messageTimestamp.textContent = timestamp;
 
-        const messageContent = templateSegments[1];
-        messageContent.textContent = content;
-
         const messageDateIndex = datestampIndex(datestamp);
+        const messageTimeIndex = timestampIndex(timestamp);
 
-        if (lastMessageIndex < messageDateIndex) {
-            lastMessageIndex = messageDateIndex;
+        if (lastMessageDateIndex < messageDateIndex) {
+            lastMessageDateIndex = messageDateIndex;
 
             const dateSeparator = chatDateSeparatorTemplate.content.firstElementChild.cloneNode(true);
 
             dateSeparator.textContent = datestamp;
 
             chatHistory.appendChild(dateSeparator);
+        }
+
+        if (lastMessageTimeIndex < messageTimeIndex) {
+            lastMessageTimeIndex = messageTimeIndex;
         }
 
         chatHistory.appendChild(message);
@@ -195,9 +210,9 @@
         const date = new Date();
         const [timestamp, datestamp] = formatTimestamp(date);
         createChatMessage(timestamp, datestamp, messageSource.value, true);
-        messageSource.value = '';
         
         function onSuccess(xhr, xhrResponse, xhrResponseType) {
+            messageSource.value = '';
         }
 
         function onFailure(xhr, xhrStatus) {
@@ -206,12 +221,10 @@
         const headers = [];
         const body = null;
 
-        REST('/api/sendMessage', 'POST', true, 0, headers, body, onSuccess, onFailure);
+        REST(`/api/sendMessage?content=${messageSource.value}`, 'POST', true, 0, headers, body, onSuccess, onFailure);
     });
 
     setInterval(function() {
-        const date = new Date();
-
         function onSuccess(xhr, xhrResponse, xhrResponseType) {
             const response = JSON.parse(xhrResponse);
             
@@ -225,8 +238,9 @@
 
         const headers = [['Content-Type', 'multipart/form-data']];
         const body = new FormData();
-        body.set('fromDate', date);
+        //body.set('fromDate', date); // TODO(mikolaj): forms reee
+        const params = `fromDate=${lastMessageDateIndex}&fromTime=${lastMessageTimeIndex}`;
 
-        REST('/api/fetchMessages', 'GET', true, 0, headers, body, onSuccess, onFailure);
-    }, 2500);
+        REST(`/api/fetchMessages?${params}`, 'GET', true, 0, headers, body, onSuccess, onFailure);
+    }, 1000);
 </script>

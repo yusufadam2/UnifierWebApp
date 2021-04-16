@@ -1,14 +1,17 @@
 import os
 
+import conversation
 import crypto
 import sqldb
 import datetime
 
 from flask import abort, jsonify, request, Flask, session, redirect, url_for
 from flask_session import Session
-from datetime import datetime
+from datetime import datetime, date
 #from flask_cors import CORS, cross_origin
 
+CONVERSATION_ROOT = 'conversations'
+conversation.ensure_fpath(CONVERSATION_ROOT)
 
 # TODO(mikolaj): remove static_* parameters for production
 app = Flask(__name__, static_url_path='', static_folder='../static')
@@ -107,7 +110,6 @@ def logout():
 
     session.pop('uid')
 
-    print(f'[user-{uid}] Logged out!')
     redirect('/')
 
     return app.response_class(status=200)
@@ -119,7 +121,8 @@ def read_profile():
     assert conn is not None
     cur = conn.cursor()
 
-    uid = session.get('uid')
+    # take the uid provided in the request, falling back to the session uid
+    uid = request.values.get('uid', session.get('uid'))
 
     query = '''SELECT * FROM Users
     WHERE id LIKE ?;'''
@@ -142,7 +145,7 @@ def read_profile():
     query = 'SELECT name FROM Interests WHERE id LIKE ?;'
     interest_names = [None] * len(interests)
     for idx, interest in enumerate(interests):
-        interest_names[idx] = sqldb.do_sql(cur, query, interest)
+        interest_names[idx] = sqldb.do_sql(cur, query, interest)[0][0]
 
     return jsonify({
         'uid': uid,
@@ -224,26 +227,50 @@ def start_conversation():
     cur = conn.cursor()
 
     uid = session.get('uid')
+    print(request.values)
+    print(request.form)
+    print(request.args)
     other_uid = request.values.get('other')
+
+    print(other_uid)
 
     query = '''SELECT conversationId FROM UsersConversationsJoin
     INNER JOIN Users ON UsersConversationsJoin.userId = Users.id
+    INNER JOIN Conversations ON UsersConversationsJoin.conversationId = Conversations.id
     WHERE userId LIKE ?;'''
     parameters = (uid,)
     result = sqldb.do_sql(cur, query, parameters)
+    print(f'Result: {result} type={type(result)}')
 
-    if result is None:
+    if result is None or len(result) == 0:
         # TODO(mikolaj): fixme - invalid insert with too few values
-        query = '''INSERT INTO Conversations VALUES (?);'''
+        query = '''INSERT INTO Conversations (fpath) 
+        VALUES (?);'''
         parameters = ('',)
-        new_conversation = sqldb.do_sql(cur, query, parameters)
-        print(new_conversation)
+        sqldb.do_sql(cur, query, parameters)
+        cid = cur.lastrowid
 
-        return app.response_class(200)
+        new_fpath = f'{CONVERSATION_ROOT}/{cid}'
 
+        query = '''UPDATE Conversations
+        SET fpath = ?
+        WHERE id = ?;'''
+        parameters = (new_fpath, cid)
+        sqldb.do_sql(cur, query, parameters)
 
-    print(result)
-    session['cid'] = result[0]
+        query = '''INSERT INTO UsersConversationsJoin (userId, conversationId) 
+        VALUES (?,?);'''
+        sqldb.do_sql(cur, query, (uid, cid))
+        sqldb.do_sql(cur, query, (other_uid, cid))
+
+        conn.commit()
+
+        session['cid'] = cid
+        
+        return app.response_class(status=200)
+
+    session['cid'] = result[0][0]
+    print(session['cid'])
 
     return app.response_class(status=200)
 
@@ -273,29 +300,30 @@ def send_message():
 
     uid = session.get('uid')
     cid = session.get('cid')
-    message = request.values.get('message')
+    message = request.values.get('content')
     date_time = datetime.utcnow()
 
     query = '''SELECT conversationId FROM UsersConversationsJoin 
     INNER JOIN Users ON UsersConversationsJoin.userId = Users.id 
-    WHERE userId LIKE ? AND converstaionId LIKE ?;'''
+    WHERE userId LIKE ? AND conversationId LIKE ?;'''
 
     parameters = (uid, cid)
-    convoValidation = sqldb.do_sql(cur, query, parameters)
+    users_conversations = sqldb.do_sql(cur, query, parameters)
 
-    if convoValidation is None:
-        print(f'User does not have access to this conversation!')
+    if users_conversations is None or len(users_conversations) == 0:
         return app.response_class(status=400)
 
     query = '''SELECT fpath FROM Conversations 
-    INNER JOIN UsersConversationsJoin ON UsersConversationsJoin.converstaionId = Conversations.id 
-    WHERE id LIKE ?;'''
+    INNER JOIN UsersConversationsJoin ON UsersConversationsJoin.conversationId = Conversations.id 
+    WHERE Conversations.id LIKE ?;'''
 
     parameters = (cid,)
-    cur.execute(query, parameters)
-    fpath = cur.fetchone()
+    fpath = sqldb.do_sql(cur, query, parameters)
 
-    conversations.write_message(fpath, date_time, uid, message)
+    if fpath is None or len(fpath) == 0:
+        return app.response_class(status=200)
+
+    conversation.write_message(fpath[0][0], date_time, uid, message)
     return app.response_class(status=200)
 
 
@@ -308,42 +336,31 @@ def fetch_messages():
     uid = session.get('uid')
     cid = session.get('cid')
     from_date = request.values.get('fromDate')
+    from_time = request.values.get('fromTime')
 
     query = '''SELECT fpath FROM UsersConversationsJoin 
     INNER JOIN Users ON UsersConversationsJoin.userId = Users.id 
     INNER JOIN Conversations ON UsersConversationsJoin.conversationId = Conversations.id
     WHERE userId LIKE ? AND conversationId LIKE ?;'''
     parameters = (uid, cid)
-    conversation = sqldb.do_sql(cur, query, parameters)
+    fpath = sqldb.do_sql(cur, query, parameters)
 
-    if conversation is None:
+    if fpath is None or len(fpath) == 0:
         return app.response_class(status=400)
-
-    months = {
-        'January': 1,
-        'February': 2,
-        'March': 3,
-        'April': 4,
-        'May': 5,
-        'June': 6,
-        'July': 7,
-        'August': 8,
-        'September': 9,
-        'October': 10,
-        'November': 11,
-        'December': 12,
-    }
 
     try:
-        from_day, from_month, from_year = from_date.split(' ')
-        from_date = datetime.date(from_year, months[from_month], from_day)
+        from_date_index = int(from_date)
+    except Exception:
+        from_date_index = -1
 
-        msgs_to_read = conversations.read_messages(fpath, from_date)
-        print(msgs_to_read)
+    try:
+        from_time_index = int(from_time)
+    except Exception:
+        from_time_index = -1
+    
+    msgs_to_read = conversation.read_messages(fpath[0][0], from_date_index, from_time_index)
 
-        return jsonify([{'timestamp': t[0], 'datestamp': t[1], 'content': t[2], 'isLocal': t[3] == uid} for t in msgs_to_read])
-    except:
-        return app.response_class(status=400)
+    return jsonify([{'timestamp': t[0], 'datestamp': t[1], 'content': t[3], 'isLocal': int(t[2]) == uid} for t in msgs_to_read])
 
 
 @app.route('/api/interests', methods = ['GET'])
@@ -370,22 +387,24 @@ def fetch_all_friends():
     WHERE userId LIKE ?;'''
     parameters = (uid,)
     conversations = sqldb.do_sql(cur, query, parameters)
-    print(conversations)
 
     if conversations is None:
         return []
 
-    friend_ids = []
+    friend_ids = [1, 2]
 
-    query = '''SELECT userId FROM UsesConversationsJoin
+    query = '''SELECT userId FROM UsersConversationsJoin
     WHERE userId <> ? AND conversationId LIKE ?;'''
 
-    for idx, conversation_id in enumerate(conversations):
-        parameters = (uid, conversation_id)
-        friend = sqldb.do_sql(cur, query, parameters)
-        friend_ids.append(friend)
+    for idx, tup in enumerate(conversations):
+        parameters = (uid, tup[0])
+        friends = sqldb.do_sql(cur, query, parameters)
 
-    print(friend_ids)
+        if friends is None or len(friends) == 0:
+            continue
+
+        for friend_id in friends:
+            friend_ids.append(friend_id)
 
     return jsonify(friend_ids)
 
