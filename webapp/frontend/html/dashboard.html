@@ -81,12 +81,12 @@
                     <h1>Friends List</h1>
                 </div>
                 <ul class="list-group list-group-flush" id="friendList">
-                    <li class="list-group-item">
+                    <li id="noFriendMessage" class="list-group-item" style="display: none;">
                         <div class="d-flex justify-content-evenly">
                             <img src="/friend-1.png" class="flex-shrink-0 mr-3 mt-3 rounded-circle"
                                 style="width: 60px;height:60px;">
                             <div class="d-flex align-items-center">
-                                <a href="/conversation.html" class="align-self-center profile-link online">
+                                <a href="/match.html" class="align-self-center profile-link online">
                                     <h4 class="media-heading" id="">You currently have no friends</h4>
                                 </a>
                             </div>
@@ -143,9 +143,14 @@
             console.log(`Successfully fetched friends!`);
 
             const response = JSON.parse(xhrResponse);
+
+            if (response.length === 0) {
+                document.getElementById('noFriendMessage').style = 'display: block;';
+                return;
+            }
+
             for (let idx in response) {
                 let friendId = response[idx];
-                console.log(friendId);
 
                 function onSuccess(xhr, xhrResponse, xhrResponseType) {
                     console.log(xhrResponse);
