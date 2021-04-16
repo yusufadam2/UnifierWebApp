@@ -13,7 +13,6 @@ def ensure_fpath(fpath: str):
     Creates the given fpath if it doesnt already exist.
     """
     if not os.path.isdir(fpath):
-        print(f'Creating fpath: {fpath}')
         os.mkdir(fpath)
 
 

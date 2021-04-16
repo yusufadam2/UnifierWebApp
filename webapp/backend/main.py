@@ -157,32 +157,40 @@ def read_profile():
 
 
 #update interests left to do
-@app.route('/api/updateProfile', methods=['GET'])
+@app.route('/api/updateProfile', methods=['POST'])
 def update_profile():
     conn = sqldb.try_open_conn()
     assert conn is not None
     cur = conn.cursor()
 
-    uid = request.values.get('uid')
+    uid = session.get('uid')
     name = request.values.get('name')
-    dob = user.values.get('dob')
+    dob = request.values.get('dob')
     interests = request.values.get('interests')
     biography = request.values.get('biography')
     gender = request.values.get('gender')
     profilePicture = request.values.get('profilePicture')
 
+    print(request.values)
+
     interests_list = interests.split(',')
 
-    user_exist = sqldb.do_sql(cur, 'SELECT * FROM Users WHERE id LIKE ?;', uid)
+    query = '''SELECT * FROM Users
+    WHERE id LIKE ?;'''
+    parameters = (uid,)
+
+    user_exist = sqldb.do_sql(cur, query, parameters)
 
     if user_exist is None:
-        query = 'INSERT INTO Users (id, name, dob, gender, bio) VALUES (?,?,?,?,?);'
-        parameters = (uid, name, dob, gender, biography)
-        cur.execute(query, parameters)
+#        query = '''INSERT INTO UserPictures(data) VALUES (?);'''
+#        parameters = ('',)
+#        sqldb.do_sql(cur, query, parameters)
+#        picture_id = cur.lastrowindex
 
-        query = 'INSERT INTO UserPictures(data) VALUES (?);'
-        parameters = (profilePicture,)
-        cur.execute(query, parameters)
+        query = '''INSERT INTO Users (id, name, dob, gender, bio, pictureId) 
+        VALUES (?,?,?,?,?,?);'''
+        parameters = (uid, name, dob, gender, biography, 1)
+        sqldb.do_sql(cur, query, parameters)
 
         for interest in interests_list:
             interest_id = sqldb.get_interest_id(interest)
@@ -190,30 +198,28 @@ def update_profile():
             do_sql(cur, query_interest, (uid, interest_id))
 
     else: 
-        query = 'UPDATE Users SET bio = ?, gender = ? WHERE id LIKE ?;'
+        query = '''UPDATE Users SET bio = ?, gender = ? WHERE id LIKE ?;'''
         parameters = (biography, gender, uid)
-        cur.execute(query, parameters)
+        sqldb.do_sql(cur, query, parameters)
 
-        query = 'SELECT pictureId FROM Users WHERE id LIKE ?;'
-        parameters = (uid,)
-        cur.execute(query, parameters)
-        picId = cur.fetchone()
+#        query = '''SELECT pictureId FROM Users WHERE id LIKE ?;'''
+#        parameters = (uid,)
+#        picture_id = sqldb.do_sql(cur, query, parameters)
 
-        query = '''UPDATE UserPictures SET data = ? 
-        INNER JOIN Users ON UserPictures.id = Users.pictureId 
-        WHERE id LIKE ?;'''
+#        query = '''UPDATE UserPictures
+#        SET data = ?
+#        WHERE id LIKE ?;'''
+#        parameters = (profilePicture, picture_id)
+#        cur.execute(query, parameters)
 
-        parameters = (profilePicture, picId)
-        cur.execute(query, parameters)
-
-        for interest in interest_list:
-            interest_id = sqldb.get_interest_id(interest)
-            existing_interests = do_sql(cur, 'SELECT interestId FROM UsersInterestsJoin WHERE userId LIKE ?;', (uid,))
-            if (interest in existing_interests):
-                continue;
-            else:
-                query_interest = 'INSERT INTO UsersInterestsJoin (userId, interestId) VALUES (?,?);'
-                do_sql(cur, query_interest, (uid, interest_id))
+#        for interest in interests_list:
+#            interest_id = sqldb.get_interest_id(interest)
+#            existing_interests = do_sql(cur, 'SELECT interestId FROM UsersInterestsJoin WHERE userId LIKE ?;', (uid,))
+#            if (interest in existing_interests):
+#                continue;
+#            else:
+#                query_interest = 'INSERT INTO UsersInterestsJoin (userId, interestId) VALUES (?,?);'
+#                do_sql(cur, query_interest, (uid, interest_id))
 
     return app.response_class(status=200)
 

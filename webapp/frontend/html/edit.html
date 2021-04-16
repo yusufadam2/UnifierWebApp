@@ -78,42 +78,6 @@
          width: 50%;
     }
 </style>
-<script>
-  function onEditSubmit() {
-      const headers = [];
-      const body = null;
-
-      function onSuccess(xhr, xhrResponse, xhrResponseType) {
-          console.log(`Successfully read the profile!`);
-      }
-
-      function onFailure(xhr, xhrStatus) {
-          console.log(`Failed to read profile: ${xhrStatus}`);
-      }
-
-      REST('http://localhost:5000/api/readProfile', 'POST', true, 0, headers, body, onSuccess, onFailure);
-
-  function onSaveSubmit() {
-    const form = document.getElementById('profileForm');
-
-    const headers = ['Content-Type', 'application/x-www-form-urlencoded'];
-    const body = new FormData(form);
-
-    function onSuccess(xhr, xhrResponse, xhrResponseType) {
-        console.log(`Saved profile: ${xhrResponse}`);
-    }
-
-    function onFailure(xhr, xhrStatus) {
-        console.log(`Failed to save: ${xhrStatus}`);
-    }
-
-    REST('http://localhost:5000/api/updateProfile', 'POST', true, 0, headers, body, onSuccess, onFailure);
-
-    return false;
-  }
-
-  onEditSubmit()
-</script>
 <section class="Form my-4 mx-5">
     <div class="container">
         <div class="row no-gutters">
@@ -128,7 +92,7 @@
                 <form id="profileForm">
                     <div class="form-row p-2">
                         <label for="name">Name:</label>
-                        <div id="name" contenteditable="true" class="editableBox">
+                        <div id="name" contenteditable="true" class="boxed">
                             John Smith
                         </div>
                         <label for="dob">Date of Birth:</label>
@@ -137,7 +101,7 @@
                         <br>
                         <label for="gender">Gender:</label>
                         <br>
-                        <div id="gender" contenteditable="true" class="editableBox">
+                        <div id="gender" contenteditable="true" class="boxed">
                             Male
                         </div>
                         <label for="interests">Interests:</label>
@@ -147,12 +111,12 @@
                         </select>
                         <br>
                         <label for="bio">Bio:</label>
-                        <div contenteditable="true" id="bio" class="boxed my-3 p-2">
+                        <div id="bio" contenteditable="true" class="boxed my-3 p-2">
                             Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum
                         </div>
                         <div class="col text-center">
-                            <button type="button" class="btn1 mt-3 mb-3">Return</button>
-                            <button type="button" class="btn2 mt-3 mb-3" onsubmit="return onSaveSubmit()">Save</button>
+                            <button id="quitBtn" type="button" class="btn1 mt-3 mb-3">Return</button>
+                            <button id="submitBtn" type="button" class="btn2 mt-3 mb-3">Save</button>
                         </div>
                     </div>
                 </form>
@@ -160,3 +124,69 @@
         </div>
     </div>
 </section>
+<script>
+    const profileForm = document.getElementById('profileForm');
+
+    const nameInput = document.getElementById('name');
+    const dobInput = document.getElementById('dob');
+    const genderInput = document.getElementById('gender');
+    const interestsInput = document.getElementById('interests');
+    const bioInput = document.getElementById('bio');
+
+    function onEditSubmit() {
+        function onSuccess(xhr, xhrResponse, xhrResponseType) {
+            console.log(`Successfully read the profile!`);
+
+            const response = JSON.parse(xhrResponse);
+            console.log(response);
+
+            nameInput.value = response['username'];
+            dobInput.value = response['dob'].split(' ')[0];
+            genderInput.value = response['gender'];
+            interestsInput.value = response['interests'];
+            bioInput.value = response['bioInput'];
+        }
+
+        function onFailure(xhr, xhrStatus) {
+            console.log(`Failed to read profile: ${xhrStatus}`);
+        }
+
+        const headers = [];
+        const body = null;
+        const params = ``;
+
+        REST(`/api/readProfile?${params}`, 'GET', true, 0, headers, body, onSuccess, onFailure);
+    }
+
+    function onSaveSubmit() {
+        function onSuccess(xhr, xhrResponse, xhrResponseType) {
+            console.log(`Saved profile: ${xhrResponse}`);
+        }
+
+        function onFailure(xhr, xhrStatus) {
+            console.log(`Failed to save: ${xhrStatus}`);
+        }
+
+        const headers = [];
+        const body = null;
+        console.log(bioInput);
+        console.log(bioInput.value);
+        const params = `name=${nameInput.textContent}&dob=${dobInput.value}&gender=${genderInput.textContent}&bio=${bioInput.textContent}&interests=${interestsInput.value}`;
+
+
+        REST(`/api/updateProfile?${params}`, 'POST', true, 0, headers, body, onSuccess, onFailure);
+
+        return false;
+    }
+
+    document.getElementById('quitBtn').addEventListener('click', function(e) {
+        window.location.replace('/dashboard.html');
+    });
+
+    document.getElementById('submitBtn').addEventListener('click', function(e) {
+        onSaveSubmit();
+    });
+
+    onEditSubmit();
+</script>
+
