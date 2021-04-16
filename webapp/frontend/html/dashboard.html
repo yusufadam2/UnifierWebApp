@@ -1,73 +1,3 @@
-<script>
-    function fetchProfile() {
-        const headers = [];
-        const body = null;
-
-        function onSuccess(xhr, xhrResponse, xhrResponseType) {
-            console.log(`Successfully fetched profile!`);
-        }
-
-        function onFailure(xhr, xhrStatus) {
-            console.log(`Failed to fetch profile: ${xhrStatus}`);
-        }
-
-        var profileInfo = [];
-        var cookie = document.cookie;
-        var baseUrl = 'http://localhost:5000/api/readProfile?'
-        var finalUrl = baseUrl.concat(cookie)
-        profileInfo = REST(finalUrl, 'GET', true, 0, headers, body, onSuccess, onFailure);
-
-        document.getElementById("bioPar").innerHTML = profileInfo[4];
-        document.getElementById("bioImg").src = profileInfo[7];
-    }
-
-    function fetchFriends() {
-        const headers = [];
-        const body = null;
-
-        function onSuccess(xhr, xhrResponse, xhrResponseType) {
-            console.log(`Successfully fetched friends!`);
-        }
-
-        function onFailure(xhr, xhrStatus) {
-            console.log(`Failed to fetch friends: ${xhrStatus}`);
-        }
-
-        var friendIds = [];
-        baseUrl = 'http://localhost:5000/api/friends?'
-        finalUrl = baseUrl.concat(cookie)
-        friendsIds = REST(finalUrl, 'GET', true, 0, headers, body, onSuccess, onFailure);
-
-        if (friendsIds.length == 0) {
-            return;
-        }
-
-        else {
-            for (var i = 0; i < friendsIds.length; i++) {
-                if (i != 0) {
-                    var itm = document.getElementById("friendList").lastChild;
-                    var cln = itm.cloneNode(true);
-                    document.getElementById("friendList").appendChild(cln);
-                }
-                
-                var cookie = friendsIds[i];
-                var baseUrl = 'http://localhost:5000/api/readProfile?uid='
-                var finalUrl = baseUrl.concat(cookie)
-                friend = REST(finalUrl, 'GET', true, 0, headers, body, onSuccess, onFailure);
-
-                document.getElementById("friendList").lastElementChild.innerHTML = friend[4];
-                document.getElementById("friendList").lastElementChild.src = friend[7];
-                //document.getElementById("friendList").lastElementChild.href = '#';
-            }
-        }
-
-    }
-
-    fetchProfile();
-    fetchFriends();
-
-</script>
-
 <style>
     body {
         background-color: #32424b !important;
@@ -117,6 +47,7 @@
 <div class="container-fluid text-center ">
     <div class="page-header">
         <h1>Dashboard</h1>
+        <button id="apiTest">click me</button>
     </div>
     <div class="row equal">
         <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
@@ -172,3 +103,86 @@
         </div>
     </div>
 </div>
+<script>
+    function fetchProfile() {
+        function onSuccess(xhr, xhrResponse, xhrResponseType) {
+            console.log(`Successfully fetched profile!`);
+
+            const response = JSON.parse(xhrResponse);
+            document.getElementById('bioPar').innerHTML = response['biography'];
+            document.getElementById('bioImg').src = response['picture'];
+        }
+
+        function onFailure(xhr, xhrStatus) {
+            console.log(`Failed to fetch profile: ${xhrStatus}`);
+        }
+
+        const headers = [];
+        const body = null;
+
+        REST('/api/readProfile', 'GET', true, 0, headers, body, onSuccess, onFailure);
+    }
+
+    function fetchFriends() {
+        function onSuccess(xhr, xhrResponse, xhrResponseType) {
+            console.log(`Successfully fetched friends!`);
+
+            const response = JSON.parse(xhrResponse);
+            for (let friendId of response) {
+                console.log(friendId);
+            }
+        }
+
+        function onFailure(xhr, xhrStatus) {
+            console.log(`Failed to fetch friends: ${xhrStatus}`);
+        }
+
+        const headers = [];
+        const body = null;
+
+        REST('/api/friends', 'GET', true, 0, headers, body, onSuccess, onFailure);
+/*
+        if (friendsIds.length == 0) {
+            return;
+        }
+
+        else {
+            for (var i = 0; i < friendsIds.length; i++) {
+                if (i != 0) {
+                    var itm = document.getElementById("friendList").lastChild;
+                    var cln = itm.cloneNode(true);
+                    document.getElementById("friendList").appendChild(cln);
+                }
+                
+                var cookie = friendsIds[i];
+                var baseUrl = 'http://localhost:5000/api/readProfile?uid='
+                var finalUrl = baseUrl.concat(cookie)
+                friend = REST(finalUrl, 'GET', true, 0, headers, body, onSuccess, onFailure);
+
+                document.getElementById("friendList").lastElementChild.innerHTML = friend[4];
+                document.getElementById("friendList").lastElementChild.src = friend[7];
+                //document.getElementById("friendList").lastElementChild.href = '#';
+            }
+        }
+*/
+    }
+
+    fetchProfile();
+    fetchFriends();
+
+    document.getElementById('apiTest').addEventListener('click', function(e) {
+        function debug(xhr, xhrResponse, xhrResponseType) {
+            console.log(xhr);
+            console.log(xhrResponse);
+            console.log(xhrResponseType);
+        }
+
+        const headers = [['Content-Type', 'multipart/form-data']];
+        const body = new FormData();
+        body.set('other', 1);
+
+        REST('/api/startConversation', 'POST', true, 0, headers, body, debug, debug);
+    });
+</script>
+
+

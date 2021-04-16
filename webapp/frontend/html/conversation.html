@@ -92,28 +92,48 @@
     </div>
 </div>
 <script>
-    if (typeof Storage === undefined) {
-        console.log(`Cannot find storage object!`);
+    const months = [
+        'January',
+        'February',
+        'March',
+        'April',
+        'May',
+        'June',
+        'July',
+        'August',
+        'September',
+        'October',
+        'November',
+        'December'
+    ];
+
+    function getMonthIndex(month) {
+        for (let idx in months) {
+            if (months[idx] === month) return idx;
+        }
+
+        return -1;
     }
 
+    function datestampIndex(datestamp) {
+        if (datestamp === null) {
+            return -1;
+        }
+
+        const [day, month, year] = datestamp.split(' ');
+
+        return parseInt(`${year}${getMonthIndex(month)}${day}`);
+    }
+
+    let lastMessageIndex = datestampIndex(null);
+
     function formatTimestamp(date) {
+        if (date === null) {
+            return ['', ''];
+        }
+
         const second = date.getSeconds(), minute = date.getMinutes(), hour = date.getHours();
         const day = date.getDate(), month = date.getMonth(), year = date.getFullYear();
-
-        const months = [
-            'January',
-            'February',
-            'March',
-            'April',
-            'May',
-            'June',
-            'July',
-            'August',
-            'September',
-            'October',
-            'November',
-            'December'
-        ];
 
         return [
             `${new String(hour).padStart(2, '0')}:${new String(minute).padStart(2, '0')}`,
@@ -124,8 +144,6 @@
     const chatHistory = document.getElementById('chatHistory');
     const chatDateSeparatorTemplate = document.getElementById('chatDateSeparatorTemplate');
     const chatMessageTemplate = document.getElementById('chatMsgTemplate');
-
-    let lastReceivedMessageDate = '';
 
     function createChatMessage(timestamp, datestamp, content, isLocal) {
         const message = chatMessageTemplate.content.firstElementChild.cloneNode(true);
@@ -140,8 +158,10 @@
         const messageContent = templateSegments[1];
         messageContent.textContent = content;
 
-        if (lastReceivedMessageDate < datestamp) {
-            lastReceivedMessageDate = datestamp;
+        const messageDateIndex = datestampIndex(datestamp);
+
+        if (lastMessageIndex < messageDateIndex) {
+            lastMessageIndex = messageDateIndex;
 
             const dateSeparator = chatDateSeparatorTemplate.content.firstElementChild.cloneNode(true);
 
@@ -155,7 +175,17 @@
 
     const quitButton = document.getElementById('chatExit');
     quitButton.addEventListener('click', function(e) {
-        console.log(`Quitting chat!`);
+        function onSuccess(xhr, xhrResponse, xhrResponseType) {
+            window.location.replace('/index.html')
+        }
+
+        function onFailure(xhr, xhrResponse) {
+        }
+
+        const headers = [];
+        const body = null;
+
+        REST('/api/stopConversation', 'POST', true, 0, headers, body, onSuccess, onFailure);
     });
 
     const messageSource = document.getElementById('chatMsgInput');
@@ -166,13 +196,37 @@
         const [timestamp, datestamp] = formatTimestamp(date);
         createChatMessage(timestamp, datestamp, messageSource.value, true);
         messageSource.value = '';
-        console.log(`Sending message!`);
+        
+        function onSuccess(xhr, xhrResponse, xhrResponseType) {
+        }
+
+        function onFailure(xhr, xhrStatus) {
+        }
+
+        const headers = [];
+        const body = null;
+
+        REST('/api/sendMessage', 'POST', true, 0, headers, body, onSuccess, onFailure);
     });
 
     setInterval(function() {
-        // TODO(mikolaj): fetch messages from the api
         const date = new Date();
-        const [timestamp, datestamp] = formatTimestamp(date);
-        createChatMessage(timestamp, datestamp, 'asd', false);
+
+        function onSuccess(xhr, xhrResponse, xhrResponseType) {
+            const response = JSON.parse(xhrResponse);
+            
+            for (let message of response) {
+                createChatMessage(message['timestamp'], message['datestamp'], message['content'], message['isLocal'])
+            }
+        }
+
+        function onFailure(xhr, xhrResponse) {
+        }
+
+        const headers = [['Content-Type', 'multipart/form-data']];
+        const body = new FormData();
+        body.set('fromDate', date);
+
+        REST('/api/fetchMessages', 'GET', true, 0, headers, body, onSuccess, onFailure);
     }, 2500);
 </script>

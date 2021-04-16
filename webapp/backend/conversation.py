@@ -8,25 +8,24 @@ import datetime
 import os
 
 
-def read_messages(fpath: str, from_date: datetime.datetime):
+def read_messages(fpath: str, from_date: datetime.date):
     """
     Reads all history files in the given fpath, returning the messages 
     as a list of (date, uid, msg) tuples.
     """
 	contents = []
 
-    start_date = datetime.datetime(from_date.year, from_date.month, from_date.day)
-	now = datetime.datetime.now()
-    end_date = datetime.datetime(now.year, now.month, now.day)
+    start_date = from_date
+    end_date = datetime.date.today()
 
     while start_date <= end_date:
-		formatted_date = from_date.strftime('%d-%m-%Y')
+		formatted_date = from_date.strftime('%d %B %Y')
         conversation_file = f'{fpath}/{formatted_date}.conv'
 
 		with open(conversation_file, 'r') as conversation:
 			for line in conversation:
-				time, uid, message = line.split(';', maxsplit=2)
-                contents.append((time, uid, message))
+				time, date, uid, message = line.split(';', maxsplit=3)
+                contents.append((timestamp, datestamp, uid, message))
 
 		start_date += datetime.timedelta(days=1)
 
@@ -36,10 +35,10 @@ def read_messages(fpath: str, from_date: datetime.datetime):
 def write_message(fpath: str, date: datetime.datetime, uid: int, message: str):
     """
     Appends the given message to the correct history file in the given 
-    fpath in the format: 'date;uid;msg'
+    fpath in the format: 'time;date;uid;msg'
     """
-    formatted_date = date.strftime('%d-%m-%Y')
-    formatted_time = date.strftime('%H-%M-%S')
+    formatted_date = date.strftime('%d %B %Y')
+    formatted_time = date.strftime('%H:%M')
 
 	if not os.path.isdir(fpath):
 		os.mkdir(fpath)
@@ -49,5 +48,5 @@ def write_message(fpath: str, date: datetime.datetime, uid: int, message: str):
 		os.mknod(conversation_file)
 
 	with open(conversation_file, 'a') as conversation:
-		conversation.write(f'{formatted_time};{uid};{message}\n')
+		conversation.write(f'{formatted_time};{formatted_date};{uid};{message}\n')
 
