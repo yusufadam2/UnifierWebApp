@@ -3,6 +3,8 @@ import os
 import conversation
 import crypto
 import sqldb
+import matching
+
 import datetime
 
 from flask import abort, jsonify, request, Flask, session, redirect, url_for
@@ -12,6 +14,8 @@ from datetime import datetime, date
 
 CONVERSATION_ROOT = 'conversations'
 conversation.ensure_fpath(CONVERSATION_ROOT)
+
+DEFAULT_MATCH_COUNT = 5
 
 # TODO(mikolaj): remove static_* parameters for production
 app = Flask(__name__, static_url_path='', static_folder='../static')
@@ -103,16 +107,10 @@ def logout():
     assert conn is not None
     cur = conn.cursor()
 
-    uid = session.get('uid', None)
+    session.pop('uid', None)
+    session.pop('cid', None)
 
-    if uid is None:
-        return app.response_class(status=400)
-
-    session.pop('uid')
-
-    redirect('/')
-
-    return app.response_class(status=200)
+    return app.response_class(status=200, headers={'Clear-Site-Data': '"*", "cookies"'})
 
 
 @app.route('/api/readProfile', methods=['GET'])
@@ -229,11 +227,9 @@ def start_conversation():
     uid = session.get('uid')
     other_uid = request.values.get('other')
 
-    query = '''SELECT conversationId FROM UsersConversationsJoin
-    INNER JOIN Users ON UsersConversationsJoin.userId = Users.id
-    INNER JOIN Conversations ON UsersConversationsJoin.conversationId = Conversations.id
+    query = '''SELECT userId, conversationId FROM UsersConversationsJoin
     WHERE userId LIKE ?;'''
-    parameters = (uid,)
+    parameters = (other_uid,)
     result = sqldb.do_sql(cur, query, parameters)
 
     if result is None or len(result) == 0:
@@ -262,7 +258,7 @@ def start_conversation():
         
         return app.response_class(status=200)
 
-    session['cid'] = result[0][0]
+    session['cid'] = result[0][1]
     print(session['cid'])
 
     return app.response_class(status=200)
@@ -384,27 +380,21 @@ def fetch_all_friends():
 
     return jsonify(friend_ids)
 
-@app.route('/api/fetchMatches', methods = ['POST'])
+
+@app.route('/api/fetchMatches', methods = ['GET'])
 def fetch_best_matches():
     conn = sqldb.try_open_conn()
     assert conn is not None
     cur = conn.cursor() 
 
-    uid = request.values.get('uid')
+    uid = session.get('uid')
+    match_count = int(request.values.get('matches', DEFAULT_MATCH_COUNT))
 
     query = '''SELECT interestId FROM UsersInterestsJoin WHERE userId LIKE ?;'''
     parameters = (uid,)
+    interest_ids = [tup[0] for tup in sqldb.do_sql(cur, query, parameters)]
 
-    interest_ids = sqldb.do_sql(cur, query, parameters)
+    matches = matching.n_best_matches(cur, uid, interest_ids, match_count)
 
-    try:
-        for info in interest_ids:
-            match_id = info[0]
-            match_score = info[1]
-    except:
-        match_id = interest_ids[0]
-        match_score = interest_ids[1]
-
-    final_data = [match_id, match_score]
-    return final_data
+    return jsonify([{'uid': match[0], 'score': match[1]} for match in matches])
 

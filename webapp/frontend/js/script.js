@@ -12,6 +12,8 @@ const DASHBOARD_NAV_LINK_ID = 'dashboardNavLink';
 
 // entrypoint
 document.addEventListener('DOMContentLoaded', function(e) {
+  console.log(document.cookie);
+
   const hasSessionCookie = hasCookie(SESSION_COOKIE);
 
   const loginNavLink = document.getElementById(LOGIN_NAV_LINK_ID);

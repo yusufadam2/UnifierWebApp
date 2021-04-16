@@ -195,22 +195,13 @@
         function onSuccess(xhr, xhrResponse, xhrResponseType) {
             window.location.replace('/index.html')
         }
-
-        function onFailure(xhr, xhrResponse) {
-        }
-
-        const headers = [];
-        const body = null;
-
-        REST('/api/stopConversation', 'POST', true, 0, headers, body, onSuccess, onFailure);
     });
 
     const messageSource = document.getElementById('chatMsgInput');
 
     const sendButton = document.getElementById('chatMsgSubmit');
     sendButton.addEventListener('click', function(e) {
-        const date = new Date();
-        const [timestamp, datestamp] = formatTimestamp(date);
+        const [timestamp, datestamp] = formatTimestamp(new Date());
         createChatMessage(timestamp, datestamp, messageSource.value, true);
         
         function onSuccess(xhr, xhrResponse, xhrResponseType) {
@@ -222,8 +213,9 @@
 
         const headers = [];
         const body = null;
+        const params = `content=${messageSource.value}`;
 
-        REST(`/api/sendMessage?content=${messageSource.value}`, 'POST', true, 0, headers, body, onSuccess, onFailure);
+        REST(`/api/sendMessage?${params}`, 'POST', true, 0, headers, body, onSuccess, onFailure);
     });
 
     function fetchChatMessages() {

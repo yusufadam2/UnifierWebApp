@@ -176,11 +176,11 @@
                             console.log(`Failed to start conversation with friend ${friendId}: ${xhrStatus}`);
                         }
 
-                        const headers = [['Content-Type', 'multipart/form-data']];
-                        let body = new FormData();
-                        //body.set('other', friendId); // TODO(mikolaj): why tf do forms not work
+                        const headers = [];
+                        const body = null;
+                        const params = `other=${friendId}`;
 
-                        REST(`/api/startConversation?other=${friendId}`, 'POST', true, 0, headers, body, onSuccess, onFailure);
+                        REST(`/api/startConversation?${params}`, 'POST', true, 0, headers, body, onSuccess, onFailure);
                     });
 
                     friendList.appendChild(friend);
@@ -190,11 +190,11 @@
                     console.log(`Failed to fetch friend ${friendId} profile: ${xhrStatus}`);
                 }
 
-                const headers = [['Content-Type', 'multipart/form-data']];
-                let body = new FormData();
-                //body.set('uid', friendId); // TODO(mikolaj): again, forms dont work >:(
+                const headers = [];
+                const body = null;
+                const params = `uid=${friendId}`;
 
-                REST(`/api/readProfile?uid=${friendId}`, 'GET', true, 0, headers, body, onSuccess, onFailure);
+                REST(`/api/readProfile?${params}`, 'GET', true, 0, headers, body, onSuccess, onFailure);
             }
         }
 

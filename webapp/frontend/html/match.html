@@ -9,9 +9,14 @@
         background: #32424B;
     }
 
+    .matchList {
+        list-style: none;
+    }
+
     .row {
         background-color: #fbf0c1;
         border-radius: 30px;
+        margin: 10px;
     }
 
     .boxed {
@@ -75,71 +80,110 @@
 </style>
 <section class="Form my-4 mx-5">
     <div class="container">
-        <div class="row no-gutters">
-            <div class= "col-lg-5">
-                <img id="matchImg" src= "test.png" class="active img-fluid" alt="">
-            </div>
-            <div class="col-lg-7 px-1 pt-1">
-                <a class="logo"><img src="/logo.jpg" alt="Unifier" style="width: 200px";></a>
-                <h4>You matched!<br>Unity score:</h4><h4 id="unityScore">n</h4>
-                <form>
-                    <div class="form-row">
-                        <div id="bioPar" class="boxed my-3 p-4">
-                            Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum
+        <ul id="matchList">
+        </ul>
+        <template id="matchTemplate">
+            <li>
+                <div class="row">
+                    <div class="col-4">
+                        <img id="matchImage" src="test.png" class="active img-fluid" alt="match profile picture" />
+                    </div>
+                    <div class="col">
+                        <h4><span id="matchName"></span> (<span id="matchScore"></span> score)</h4>
+                        <div id="matchBio" class="form-row boxed my-3 p-4">
                         </div>
-                        <div class="col-lg-7">
-                            <button type="button" class="btn1 mt-3 mb-3" onsubmit="matched">Match</button>
-                        </div>
-                        <div class="col-lg-7">
-                            <button type="button" class="btn2 mt-3 mb-3" onsubmit="fetchMatch">Pass</button>
+                        <div class="form-row">
+                            <button id="matchAcceptBtn" class="btn1 mt-3 mb-3">Match</button>
+                            <button id="matchRejectBtn" class="btn2 mt-3 mb-3">Pass</button>
                         </div>
                     </div>
-                </form>
-            </div>
-        </div>
+                </div>
+            </li>
+        </template>
     </div>
 </section>
 <script>
-  function fetchMatch() {
-      const headers = [];
-      const body = null;
+    const matchCount = 5;
 
-      function onSuccess(xhr, xhrResponse, xhrResponseType) {
-          console.log(`Successfully fetched profile!`);
-      }
+    const matchList = document.getElementById('matchList');
+    const matchTemplate = document.getElementById('matchTemplate');
 
-      function onFailure(xhr, xhrStatus) {
-          console.log(`Failed to fetch profile: ${xhrStatus}`);
-      }
+    function fetchMatches() {
+        function onSuccess(xhr, xhrResponse, xhrResponseType) {
+            console.log(`Successfully fetched profile!`);
 
-      var matchInfo = [];
-      var profileInfo = [];
-      matchInfo = REST('http://localhost:5000/api/fetchMatches', 'GET', true, 0, headers, body, onSuccess, onFailure);
-      var cookie = document.cookie;
-      var baseUrl = 'http://localhost:5000/api/readProfile?'
-      var finalUrl = baseUrl.concat(matchInfo[0])
-      matchInfo = REST(finalUrl, 'GET', true, 0, headers, body, onSuccess, onFailure);
+            const response = JSON.parse(xhrResponse);
 
-      document.getElementById("unityScore").innerHTML = matchInfo[1];
-      document.getElementById("bioPar").innerHTML = profileInfo[4];
-      document.getElementById("matchImg").src = profileInfo[7];
-  }
+            for (let matchedUser of response) {
+                const uid = matchedUser['uid'];
+                const userScore = matchedUser['score'];
 
-  function matched() {
-    const headers = [];
-    const body = null;
+                function onSuccess(xhr, xhrResponse, xhrResponseType) {
+                    const response = JSON.parse(xhrResponse);
+                    console.log(response);
 
-    function onSuccess(xhr, xhrResponse, xhrResponseType) {
-        console.log(`Successfully matched!`);
-        setTimeout(() => { window.location.replace('/conversation.html'); }, 1000);
+                    const matchListItem = matchTemplate.content.firstElementChild.cloneNode(true);
+
+                    const matchImage = matchListItem.querySelector('#matchImage');
+                    const matchName = matchListItem.querySelector('#matchName');
+                    const matchScore = matchListItem.querySelector('#matchScore');
+                    const matchBio = matchListItem.querySelector('#matchBio');
+
+                    matchImage.src = response['picture'];
+                    matchName.innerHTML = response['username'];
+                    matchScore.innerHTML = userScore;
+                    matchBio.innerHTML = response['biography'];
+
+                    const matchAccept = matchListItem.querySelector('#matchAcceptBtn');
+                    matchAccept.addEventListener('click', function(e) {
+                        function onSuccess(xhr, xhrResponse, xhrResponseType) {
+                            console.log(`Started conversation with ${uid}`);
+                            console.log(matchListItem);
+                            matchListItem.style = 'display: none;';
+                        }
+
+                        function onFailure(xhr, xhrStatus) {
+
+                        }
+
+                        const headers = [];
+                        const body = null;
+                        const params = `other=${uid}`;
+
+                        REST(`/api/startConversation?${params}`, 'POST', true, 0, headers, body, onSuccess, onFailure);
+                    });
+
+                    const matchReject = matchListItem.querySelector('#matchRejectBtn');
+                    matchReject.addEventListener('click', function(e) {
+                        console.log(`Rejected ${uid}`);
+                        console.log(matchListItem);
+                        matchListItem.style = 'display: none;';
+                    });
+
+                    matchList.appendChild(matchListItem);
+                }
+
+                function onFailure(xhr, xhrStatus) {
+                }
+
+                const headers = [];
+                const body = null;
+                const params = `uid=${uid}`;
+
+                REST(`/api/readProfile?${params}`, 'GET', true, 0, headers, body, onSuccess, onFailure);
+            }
+        }
+
+        function onFailure(xhr, xhrStatus) {
+            console.log(`Failed to fetch profile: ${xhrStatus}`);
+        }
+
+        const headers = [];
+        const body = null;
+        const params = `matches=${matchCount}`;
+
+        REST(`/api/fetchMatches?${params}`, 'GET', true, 0, headers, body, onSuccess, onFailure);
     }
 
-    function onFailure(xhr, xhrStatus) {
-        console.log(`Failed to match: ${xhrStatus}`);
-    }
-
-    REST('http://localhost:5000/api/logout', 'POST', true, 0, headers, body, onSuccess, onFailure);
-  }
-
-  fetchMatch()
+    fetchMatches()
 </script>
