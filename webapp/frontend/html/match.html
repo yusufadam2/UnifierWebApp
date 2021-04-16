@@ -73,6 +73,32 @@
          width: 50%;
     }
 </style>
+<section class="Form my-4 mx-5">
+    <div class="container">
+        <div class="row no-gutters">
+            <div class= "col-lg-5">
+                <img id="matchImg" src= "test.png" class="active img-fluid" alt="">
+            </div>
+            <div class="col-lg-7 px-1 pt-1">
+                <a class="logo"><img src="/logo.jpg" alt="Unifier" style="width: 200px";></a>
+                <h4>You matched!<br>Unity score:</h4><h4 id="unityScore">n</h4>
+                <form>
+                    <div class="form-row">
+                        <div id="bioPar" class="boxed my-3 p-4">
+                            Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum
+                        </div>
+                        <div class="col-lg-7">
+                            <button type="button" class="btn1 mt-3 mb-3" onsubmit="matched">Match</button>
+                        </div>
+                        <div class="col-lg-7">
+                            <button type="button" class="btn2 mt-3 mb-3" onsubmit="fetchMatch">Pass</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
 <script>
   function fetchMatch() {
       const headers = [];
@@ -117,29 +143,3 @@
 
   fetchMatch()
 </script>
-<section class="Form my-4 mx-5">
-    <div class="container">
-        <div class="row no-gutters">
-            <div class= "col-lg-5">
-                <img id="matchImg" src= "test.png" class="active img-fluid" alt="">
-            </div>
-            <div class="col-lg-7 px-1 pt-1">
-                <a class="logo"><img src="/logo.jpg" alt="Unifier" style="width: 200px";></a>
-                <h4>You matched!<br>Unity score:</h4><h4 id="unityScore">n</h4>
-                <form>
-                    <div class="form-row">
-                        <div id="bioPar" class="boxed my-3 p-4">
-                            Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum
-                        </div>
-                        <div class="col-lg-7">
-                            <button type="button" class="btn1 mt-3 mb-3" onsubmit="matched">Match</button>
-                        </div>
-                        <div class="col-lg-7">
-                            <button type="button" class="btn2 mt-3 mb-3" onsubmit="fetchMatch">Pass</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</section>
