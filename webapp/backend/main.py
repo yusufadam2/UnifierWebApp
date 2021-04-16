@@ -227,12 +227,7 @@ def start_conversation():
     cur = conn.cursor()
 
     uid = session.get('uid')
-    print(request.values)
-    print(request.form)
-    print(request.args)
     other_uid = request.values.get('other')
-
-    print(other_uid)
 
     query = '''SELECT conversationId FROM UsersConversationsJoin
     INNER JOIN Users ON UsersConversationsJoin.userId = Users.id
@@ -240,10 +235,8 @@ def start_conversation():
     WHERE userId LIKE ?;'''
     parameters = (uid,)
     result = sqldb.do_sql(cur, query, parameters)
-    print(f'Result: {result} type={type(result)}')
 
     if result is None or len(result) == 0:
-        # TODO(mikolaj): fixme - invalid insert with too few values
         query = '''INSERT INTO Conversations (fpath) 
         VALUES (?);'''
         parameters = ('',)
@@ -271,23 +264,6 @@ def start_conversation():
 
     session['cid'] = result[0][0]
     print(session['cid'])
-
-    return app.response_class(status=200)
-
-
-@app.route('/api/stopConversation', methods=['POST'])
-def stop_conversation():
-    conn = sqldb.try_open_conn()
-    assert conn is not None
-    cur = conn.cursor()
-
-    uid = session.get('uid')
-    cid = session.get('cid', None)
-
-    if cid is None:
-        return app.response_class(status=200)
-
-    session.pop('cid')
 
     return app.response_class(status=200)
 
@@ -391,7 +367,7 @@ def fetch_all_friends():
     if conversations is None:
         return []
 
-    friend_ids = [1, 2]
+    friend_ids = []
 
     query = '''SELECT userId FROM UsersConversationsJoin
     WHERE userId <> ? AND conversationId LIKE ?;'''
