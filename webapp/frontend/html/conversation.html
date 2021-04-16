@@ -16,6 +16,13 @@ textarea:focus{
   outline:none;
 }
 
+.page-header {
+    color: #fbf0c1;
+    font-size: large;
+    font-weight: bold;
+    text-align: center;
+}
+
 .container2{
   padding:20px;
   width:500px;
@@ -35,6 +42,18 @@ textarea:focus{
   background:#d86853;
 }
 
+.boxHead {
+  text-align: center;
+}
+
+.footChat {
+  margin-top: 10px;
+}
+
+.date-separator {
+  text-align: center;
+}
+
 button {
     color: #32424b !important;
     background-color: #65cbb6 !important;
@@ -47,15 +66,15 @@ button:hover {
     border-color: #40a893 !important;
 }
 
-.translator{
-    transform:translate(0%,100%);
-}
 
 </style>
-<div class="container-fluid d-flex flex-column container3 translator" style="height: 100%;">
-    <div class="row flex-shrink-1" id="chatHeader">
+<div class="page-header">
+    <h1>Conversation</h1>
+</div>
+<div class="container-fluid d-flex flex-column container3" style="height: 90%;">
+    <div class="row" id="chatHeader">
         <!--<div class="col" id="chatPeerInfo"></div>-->
-        <div class="col" id="chatInfo">
+        <div class="col boxHead" id="chatInfo">
         </div>
     </div>
     <div class="row flex-grow-1 flex-shrink-1 container2" id="chatBody">
@@ -70,7 +89,7 @@ button:hover {
             </li>
         </template>
     </div>
-    <div class="row flex-shrink-1" id="chatFooter">
+    <div class="row footChat" id="chatFooter">
         <button class="col-2" id="chatExit">
             Leave
         </button>
@@ -159,7 +178,7 @@ button:hover {
 
         message.className += 'msg ';
         message.className += isLocal ? 'msg-local ' : 'msg-remote ';
-        
+
         const messageTimestamp = message.querySelector('#timestamp');
         const messageContent = message.querySelector('#content');
 
@@ -209,7 +228,7 @@ button:hover {
         const date = new Date();
         const [timestamp, datestamp] = formatTimestamp(date);
         createChatMessage(timestamp, datestamp, messageSource.value, true);
-        
+
         function onSuccess(xhr, xhrResponse, xhrResponseType) {
             messageSource.value = '';
         }
@@ -226,7 +245,7 @@ button:hover {
     function fetchChatMessages() {
         function onSuccess(xhr, xhrResponse, xhrResponseType) {
             const response = JSON.parse(xhrResponse);
-            
+
             for (let message of response) {
                 createChatMessage(message['timestamp'], message['datestamp'], message['content'], message['isLocal'])
             }
