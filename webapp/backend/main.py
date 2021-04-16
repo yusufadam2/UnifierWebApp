@@ -389,7 +389,7 @@ def fetch_all_friends():
 
     return jsonify(friend_ids)
 
-@app.route('/api/fetchMatches' methods = ['POST'])
+@app.route('/api/fetchMatches', methods = ['POST'])
 def fetch_best_matches():
     conn = sqldb.try_open_conn()
     assert conn is not None
