@@ -408,3 +408,27 @@ def fetch_all_friends():
 
     return jsonify(friend_ids)
 
+@app.route('/api/fetchMatches', methods = ['POST'])
+def fetch_best_matches():
+    conn = sqldb.try_open_conn()
+    assert conn is not None
+    cur = conn.cursor() 
+
+    uid = request.values.get('uid')
+
+    query = '''SELECT interestId FROM UsersInterestsJoin WHERE userId LIKE ?;'''
+    parameters = (uid,)
+
+    interest_ids = sqldb.do_sql(cur, query, parameters)
+
+    try:
+        for info in interest_ids:
+            match_id = info[0]
+            match_score = info[1]
+    except:
+        match_id = interest_ids[0]
+        match_score = interest_ids[1]
+
+    final_data = [match_id, match_score]
+    return final_data
+
