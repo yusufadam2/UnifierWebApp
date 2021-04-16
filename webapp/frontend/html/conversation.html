@@ -1,67 +1,83 @@
 <style>
-    #chatPeerInfo {
-        background: red;
+body {
+        background-color: #32424b !important;
     }
+textarea{
+  width:100%;
+  padding:15px;
+  margin:50px 0 22 0;
+  display:inline-block;
+  border:none;
+  background:#f7f7f7;
+  font-family:montserrat.arial;
+}
+textarea:focus{
+  background-color:#ddd;
+  outline:none;
+}
 
-    #chatInfo {
-        background: green;
-    }
+.page-header {
+    color: #fbf0c1;
+    font-size: large;
+    font-weight: bold;
+    text-align: center;
+}
 
-    #chatHistory {
-        background: blue;
-        list-style: none;
-    }
+.container2{
+  padding:20px;
+  width:500px;
+  left:50%;
+  top:30%;
+  border:2px solid #ccc;
+  border-radius:10px;
+  background:#fbf0c1;
+  transform:translate(8%,0%);
+}
 
-    #chatHistory > .msg {
-    }
+.container3{
+  padding:20px;
+  width:600px;
+  border:2px solid #ccc;
+  border-radius:10px;
+  background:#d86853;
+}
 
-    #chatHistory > .msg-local {
-        background: pink;
-    }
+.boxHead {
+  text-align: center;
+}
 
-    #chatHistory > .msg-remote {
-        background: purple;
-    }
+.footChat {
+  margin-top: 10px;
+}
 
-    #chatHistory > .date-separator {
-        display: flex;
-        align-items: center;
-        text-align: center;
-    }
+.date-separator {
+  text-align: center;
+}
 
-    #chatHistory > .date-separator::before, #chatHistory > .date-separator::after {
-        content: '';
-        flex: 1;
-        border-bottom: 1px solid #000;
-    }
+button {
+    color: #32424b !important;
+    background-color: #65cbb6 !important;
+    border-color: #65cbb6 !important;
+}
 
-    #chatHistory > .date-separator:not(:empty)::before {
-        margin-right: .25em;
-    }
+button:hover {
+    color: #32424b !important;
+    background-color: #40a893 !important;
+    border-color: #40a893 !important;
+}
 
-    #chatHistory > .date-separator:not(:empty)::after {
-        margin-left: .25em;
-    }
 
-    #chatExit {
-        background: brown;
-    }
-
-    #chatMsgInput {
-        background: yellow;
-    }
-
-    #chatMsgSubmit {
-        background: orange;
-    }
 </style>
-<div class="container-fluid d-flex flex-column" style="height: 100%;">
-    <div class="row flex-shrink-1" id="chatHeader">
+<div class="page-header">
+    <h1>Conversation</h1>
+</div>
+<div class="container-fluid d-flex flex-column container3" style="height: 90%;">
+    <div class="row" id="chatHeader">
         <!--<div class="col" id="chatPeerInfo"></div>-->
-        <div class="col" id="chatInfo">
+        <div class="col boxHead" id="chatInfo">
         </div>
     </div>
-    <div class="row flex-grow-1 flex-shrink-1" id="chatBody">
+    <div class="row flex-grow-1 flex-shrink-1 container2" id="chatBody">
         <ul class="col" id="chatHistory">
         </ul>
         <template id="chatDateSeparatorTemplate">
@@ -73,7 +89,7 @@
             </li>
         </template>
     </div>
-    <div class="row flex-shrink-1" id="chatFooter">
+    <div class="row footChat" id="chatFooter">
         <button class="col-2" id="chatExit">
             Leave
         </button>
@@ -162,7 +178,7 @@
 
         message.className += 'msg ';
         message.className += isLocal ? 'msg-local ' : 'msg-remote ';
-        
+
         const messageTimestamp = message.querySelector('#timestamp');
         const messageContent = message.querySelector('#content');
 
@@ -203,7 +219,7 @@
     sendButton.addEventListener('click', function(e) {
         const [timestamp, datestamp] = formatTimestamp(new Date());
         createChatMessage(timestamp, datestamp, messageSource.value, true);
-        
+
         function onSuccess(xhr, xhrResponse, xhrResponseType) {
             messageSource.value = '';
         }
@@ -221,7 +237,7 @@
     function fetchChatMessages() {
         function onSuccess(xhr, xhrResponse, xhrResponseType) {
             const response = JSON.parse(xhrResponse);
-            
+
             for (let message of response) {
                 createChatMessage(message['timestamp'], message['datestamp'], message['content'], message['isLocal'])
             }
