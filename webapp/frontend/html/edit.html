@@ -4,21 +4,95 @@
         margin-left: auto;
         margin-right: auto;
     }
+
+    body {
+        background: #32424B;
+    }
+
+    .row {
+        background-color: #fbf0c1;
+        border-radius: 30px;
+    }
+
+    .boxed {
+        border:3px solid  #65CBB6;
+        border-radius: 25px;
+        height: 100px;
+        margin-left:50px;
+        margin-right: 50px;
+        overflow: auto;
+        color: #32424B;
+        font-family: 1em/1.62 monospace,'Lucida Console',Monaco,monospace;
+        padding-top: 8px;
+        padding-left: 8px;
+        padding-right: 8px;
+        padding-bottom: 2px;
+    }
+
+    img.active {
+        border-top-left-radius: 30px;
+        border-bottom-left-radius: 30px;
+    }
+
+    .btn1 {
+        border: none;
+        outline: none;
+        height: 50px;
+        width: 100%;
+        background-color: #799788;
+        color: white;
+        border-radius: 4px;
+        font-weight: bold;
+        margin-left:auto;
+        margin-right:auto;
+
+    }
+
+    .btn1:hover {
+        background: #bbcbc3;
+        color: white; 
+    }
+
+    .btn2 {
+        border: none;
+        outline: none;
+        height: 50px;
+        width: 100%;
+        background-color: #D86853;
+        color: white;
+        border-radius: 4px;
+        font-weight: bold;
+        margin-left:auto;
+        margin-right: auto;
+    }
+
+    .btn2:hover {
+        background: #ebb3a9;
+        color: white; 
+    }
+
+    .logo {
+         display: block;
+         margin-left: auto;
+         margin-right: auto;
+         width: 50%;
+    }
 </style>
 <section class="Form my-4 mx-5">
     <div class="container">
         <div class="row no-gutters">
             <div class= "col-lg-5 text-center">
-                <img src= "test.png" class="active img-fluid" alt="">
-                <button type="button" class="btnedit mt-2">Edit</button>
+                <img src= "test.png" class="active center-block img-fluid" alt="">
+                
             </div>
             <div class="col px-1 pt-2">
+                <button type="button" class="btnedit mt-2">Edit</button>
                 <a class="logo"><img class="center-block" src="logo.jpg" alt="Unifier" style="width: 200px"></a>
                 <h4><br>Edit Profile</h4>
                 <form>
                     <div class="form-row p-2">
-                        <p>Name</p>
-                        <div contenteditable="true" class="editableBox">
+                        <label for="name">Name:</label>
+                        <div id="name" contenteditable="true" class="editableBox">
                             John Smith
                         </div>
                         <label for="dob">Date of Birth:</label>
@@ -27,19 +101,17 @@
                         <br>
                         <label for="gender">Gender:</label>
                         <br>
-                        <select name="gender" id="gender">
-                            <option value="male">Male</option>
-                            <option value="female">Female</option>
-                            <option value="other">Other</option>
-                        </select>
-                        <br>
+                        <div id="gender" contenteditable="true" class="editableBox">
+                            Male
+                        </div>
                         <label for="interests">Interests:</label>
                         <br>
                         <select name="interests" id="interests">
                             <option value="sport">Sport</option>
                         </select>
-                        <p>Bio</p>
-                        <div contenteditable="true" class="boxed my-3 p-2">
+                        <br>
+                        <label for="bio">Bio:</label>
+                        <div contenteditable="true" id="bio" class="boxed my-3 p-2">
                             Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum
                         </div>
                         <div class="col text-center">
