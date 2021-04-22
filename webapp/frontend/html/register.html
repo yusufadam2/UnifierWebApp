@@ -1,10 +1,102 @@
+<style>
+    body {
+        font-family: montserrat, arial;
+        background-color: #65cbb6;
+    }
+
+    .container2 {
+        padding: 20px;
+        width: 500px;
+        position: absolute;
+        left: 50%;
+        top: 30%;
+        transform: translate(-50%,-10%);
+        border: 2px solid #ccc;
+        border-radius: 10px;
+        background: #fbf0c1;
+    }
+
+    input {
+        width: 100%;
+        padding: 15px;
+        margin: 50px 0 22 0;
+        display: inline-block;
+        border: none;
+        background: #f7f7f7;
+        font-family: montserrat.arial;
+    }
+
+    input:focus {
+        background-color: #ddd;
+        outline: none;
+    }
+
+    button {
+        background-color: #0eb7f4;
+        color: white;
+        padding: 14px 20px;
+        margin: 8px 0;
+        border: none;
+        cursor: pointer;
+        width: 100%;
+        opacity: 0.9;
+        font-size: 16px;
+        font-family: montserrat,arial;
+        border-radius: 10px;
+    }
+</style>
+<form id="registrationForm" class="container2">
+        <h1 class="text-center">Sign up</h1>
+        <p class="text-center">
+            Register to start matching with other users!
+        </p>
+        <label for="email"><b>Email Address</b></label>
+        <input type="email" id="email" name="email" placeholder="Enter Email" required>
+
+        <label for="dob"><b>Date of Birth</b></label>
+        <input type="date" id="dob" name="dob" placeholder="Select Date of Birth" required>
+
+        <label for="username"><b>Username</b></label>
+        <input type="text" id="username" name="username" placeholder="Enter Username" required>
+
+        <label for="password"><b>Password</b></label>
+        <input type="password" id="password1" name="password" placeholder="Enter Password" required>
+
+        <label for="passwordConfirmation"><b>Confirm Password</b></label>
+        <input type="password" id="password2" name="passwordConfirmation" placeholder="Re-enter Password" required>
+        <span id='validation'></span>
+        <p>
+            By creating an account you agree to our <a href="/legal.html">Terms of Service & Privacy Policy</a>
+        </p>
+        <button type="submit" id="registerBtn" name="registerBtn" class="btn" disabled="disabled">Sign Up</button>
+</form>
 <script>
-    function onRegistrationSubmit() {
-        const form = document.getElementById('registrationForm');
+    const registrationForm = document.getElementById('registrationForm');
 
-        const headers = ['Content-Type', 'application/x-www-form-urlencoded'];
-        const body = new FormData(form);
+    const emailInput = document.getElementById('email');
+    const dobInput = document.getElementById('dob');
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password1');
+    const password2Input = document.getElementById('password2');
+    const validation = document.getElementById('validation');
+    const submit = document.getElementById('registerBtn');
 
+    function validatePassword(e) {
+        if (passwordInput.value === password2Input.value) {
+            validation.style.color = 'green';
+            validation.innerHTML = 'Passwords match!';
+            submit.disabled = false;
+        } else {
+            validation.style.color = 'red';
+            validation.innerHTML = 'Passwords do not match!';
+            submit.disabled = true;
+        }
+    }
+
+    passwordInput.addEventListener('keyup', validatePassword);
+    password2Input.addEventListener('keyup', validatePassword);
+
+    registrationForm.onsubmit = function() {
         function onSuccess(xhr, xhrResponse, xhrResponseType) {
             console.log(`Successfully registered!`);
             window.location.replace('/login.html');
@@ -14,96 +106,12 @@
             console.log(`Failed to register: ${xhrStatus}`);
         }
 
-        REST('http://localhost:5000/api/register', 'POST', true, 0, headers, body, onSuccess, onFailure);
+        const headers = [];
+        const body = null;
+        const params = `email=${emailInput.value}&dob=${dobInput.value}&username=${usernameInput.value}&password=${passwordInput.value}`;
+
+        REST(`/api/register?${params}`, 'POST', true, 0, headers, body, onSuccess, onFailure);
 
         return false;
-    }
+    };
 </script>
-
-<script >
-    var check = function() {
-        if (document.getElementById('password').value == document.getElementById('confirm_password').value)
-        {
-            document.getElementById('message').style.color = 'green';
-            document.getElementById('message').innerHTML = 'Passwords match!';
-            document.getElementById("registerBtn").disabled = false;
-        } 
-        else {
-            document.getElementById('message').style.color = 'red';
-            document.getElementById('message').innerHTML = 'Passwords do not match!';
-            document.getElementById("registerBtn").disabled = true;
-        }
-    }
-</script>
-
-
-<style>
-body {
-  font-family:montserrat, arial;
-  background-color:#65cbb6;
-}
-.container2{
-  padding:20px;
-  width:500px;
-  position:absolute;
-  left:50%;
-  top:30%;
-  transform:translate(-50%,-10%);
-  border:2px solid #ccc;
-  border-radius:10px;
-  background:#fbf0c1;
-}
-
-input[type=text],input[type=password], input[type=email]{
-  width:100%;
-  padding:15px;
-  margin:50px 0 22 0;
-  display:inline-block;
-  border:none;
-  background:#f7f7f7;
-  font-family:montserrat.arial;
-}
-input [type=text]:focus, input[type=password]:focus, input[type=email]:focus{
-  background-color:#ddd;
-  outline:none;
-}
-button{
-  background-color:#0eb7f4;
-  color:white;
-  padding:14px 20px;
-  margin:8px 0;
-  border:none;
-  cursor:pointer;
-  width:100%;
-  opacity:0.9;
-  font-size:16px;
-  font-family: montserrat,arial;
-  border-radius:10px;
-}
-</style>
-
-<form id="registrationForm" name="registrationForm" onsubmit="return onRegistrationSubmit()">
-    <div class="container2">
-        <h1 class="text-center">Sign up</h1>
-        <p class="text-center">
-            Register to start matching with other users!
-        </p>
-        <label for="email"><b>Email address</b></label>
-        <input type="email" name="email" address placeholder="Enter Email" required>
-
-        <label for="username"><b>Username</b></label>
-        <input type="text" name="username" address placeholder="Enter username" required>
-
-        <label for="password"><b>Password</b></label>
-        <input type="password" placeholder="Enter Password" name="password" id="password" onkeyup="check();" required>
-
-        <label for="confirm_password"><b>Confirm Password</b></label>
-        <input type="password" placeholder="Confirm Password" name="confirm_password" id="confirm_password" onkeyup="check();" required>
-        <span id='message'></span>
-        <p>
-            By creating an account you agree to our <a href="/legal.html">Terms of Service & Privacy Policy</a>
-        </p>
-        <button type="submit" class="btn" name="registerBtn" id="registerBtn" disabled="disabled">Sign Up</button>
-    </div>
-</form>
-

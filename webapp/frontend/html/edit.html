@@ -79,72 +79,84 @@
     }
 </style>
 <section class="Form my-4 mx-5">
-    <div class="container">
+    <form id="editForm" class="container" enctype="multipart/form-data">
         <div class="row no-gutters">
             <div class= "col-lg-5 text-center">
-                <img src= "test.png" class="active center-block img-fluid" alt="">
-                
+                <img id="profilePicture" src="/default-profile.png" class="active center-block img-fluid" alt="Profile Picture">
+                <label for="profilePictureUpload">Select Picture (.png, max 2MB)</label>
+                <input type="file" id="profilePictureUpload" name="profilePictureUpload" accept="image/png">
             </div>
             <div class="col px-1 pt-2">
-                <button type="button" class="btnedit mt-2">Edit</button>
-                <a class="logo"><img class="center-block" src="logo.jpg" alt="Unifier" style="width: 200px"></a>
                 <h4><br>Edit Profile</h4>
-                <form id="profileForm">
-                    <div class="form-row p-2">
-                        <label for="name">Name:</label>
-                        <div id="name" contenteditable="true" class="boxed">
-                            John Smith
-                        </div>
-                        <label for="dob">Date of Birth:</label>
-                        <br>
-                        <input type="date" id="dob" name="date-of-birth" value=date>
-                        <br>
-                        <label for="gender">Gender:</label>
-                        <br>
-                        <div id="gender" contenteditable="true" class="boxed">
-                            Male
-                        </div>
-                        <label for="interests">Interests:</label>
-                        <br>
-                        <select name="interests" id="interests">
-                            <option value="sport">Sport</option>
-                        </select>
-                        <br>
-                        <label for="bio">Bio:</label>
-                        <div id="bio" contenteditable="true" class="boxed my-3 p-2">
-                            Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum
-                        </div>
-                        <div class="col text-center">
-                            <button id="quitBtn" type="button" class="btn1 mt-3 mb-3">Return</button>
-                            <button id="submitBtn" type="button" class="btn2 mt-3 mb-3">Save</button>
-                        </div>
+                <div class="form-row p-2">
+                    <label for="name">Name:</label>
+                    <input type="text" id="name" name="name" class="boxed">
+                    <br />
+                    <label for="dob">Date of Birth:</label>
+                    <input type="date" id="dob" name="dob">
+                    <br />
+                    <label for="gender">Gender:</label>
+                    <input type="text" id="gender" name="gender" class="boxed">
+                    <br>
+                    <label for="biography">Bio:</label>
+                    <input type="text" id="biography" name="biography" class="boxed my-3 p-2">
+                    <br />
+                    <div class="col text-center">
+                        <button id="quitBtn" type="button" class="btn1 mt-3 mb-3">Return</button>
+                        <input type="submit" id="submitBtn" class="btn2 mt-3 mb-3" value="Save">
                     </div>
-                </form>
+                    <br />
+                    <label for="interestCategories">Interests:</label>
+                    <div id="interestCategories">
+                    </div>
+                    <template id="interestCategoryTemplate">
+                        <div>
+                            <hr />
+                            <span id="name"></span>
+                            <hr />
+                            <div id="contents"></contents>
+                        </div>
+                    </template>
+                    <template id="interestTemplate">
+                        <button></button>
+                    </template>
+                </div>
             </div>
         </div>
-    </div>
+    </form>
 </section>
 <script>
-    const profileForm = document.getElementById('profileForm');
+    const editForm = document.getElementById('editForm');
+
+    const picture = document.getElementById('profilePicture');
+    const pictureUpload = document.getElementById('profilePictureUpload');
+
+    const interestCategories = document.getElementById('interestCategories');
+    const interestCategoryTemplate = document.getElementById('interestCategoryTemplate');
+    const interestTemplate = document.getElementById('interestTemplate');
+    const interestToggleMap = {};
+    const selectedInterests = [];
 
     const nameInput = document.getElementById('name');
     const dobInput = document.getElementById('dob');
     const genderInput = document.getElementById('gender');
-    const interestsInput = document.getElementById('interests');
-    const bioInput = document.getElementById('bio');
+    const bioInput = document.getElementById('biography');
 
-    function onEditSubmit() {
+    function fetchProfile() {
         function onSuccess(xhr, xhrResponse, xhrResponseType) {
             console.log(`Successfully read the profile!`);
 
             const response = JSON.parse(xhrResponse);
-            console.log(response);
+
+            for (let interest of response['interests']) {
+                interestToggleMap[interest].click();
+            }
 
             nameInput.value = response['username'];
             dobInput.value = response['dob'].split(' ')[0];
             genderInput.value = response['gender'];
-            interestsInput.value = response['interests'];
-            bioInput.value = response['bioInput'];
+            bioInput.value = response['biography'];
+            picture.src = formatImageBase64Source(response['pictureBase64Src']);
         }
 
         function onFailure(xhr, xhrStatus) {
@@ -158,9 +170,77 @@
         REST(`/api/readProfile?${params}`, 'GET', true, 0, headers, body, onSuccess, onFailure);
     }
 
-    function onSaveSubmit() {
+    function fetchInterests() {
+        function onSuccess(xhr, xhrResponse, xhrResponseType) {
+            const response = JSON.parse(xhrResponse);
+
+            for (let category in response) {
+                console.log(category);
+
+                const interestCategory = interestCategoryTemplate.content.firstElementChild.cloneNode(true);
+
+                interestCategory.querySelector('#name').innerHTML = category;
+                const categoryChildRoot = interestCategory.querySelector('#contents');
+
+                for (let interest of response[category]) {
+                    const interestBtn = interestTemplate.content.firstElementChild.cloneNode(true);
+
+                    function toggle(e) {
+                        e.preventDefault();
+
+                        const index = selectedInterests.indexOf(interest);
+
+                        if (index === -1) {
+                            selectedInterests.push(interest);
+                            e.target.style = 'color: green;';
+                        } else {
+                            selectedInterests.splice(index, 1);
+                            e.target.style = '';
+                        }
+                    }
+
+                    interestBtn.innerHTML = interest;
+                    interestBtn.addEventListener('click', toggle);
+                    interestToggleMap[interest] = interestBtn;
+
+                    categoryChildRoot.appendChild(interestBtn);
+                }
+
+                interestCategories.appendChild(interestCategory);
+            }
+
+
+            fetchProfile();
+        }
+
+        function onFailure(xhr, xhrStatus) {
+
+        }
+
+        const headers = [];
+        const body = null;
+        const params = ``;
+
+        REST(`/api/interests?${params}`, 'GET', true, 0, headers, body, onSuccess, onFailure);
+    }
+
+    function onToggleInterest(e) {
+        console.log(e.target);
+    }
+
+    function onSubmit(e) {
+        e.preventDefault();
+
         function onSuccess(xhr, xhrResponse, xhrResponseType) {
             console.log(`Saved profile: ${xhrResponse}`);
+            
+            const response = JSON.parse(xhrResponse);
+
+            nameInput.value = response['username'];
+            dobInput.value = response['dob'].split(' ')[0];
+            genderInput.value = response['gender'];
+            bioInput.value = response['biography'];
+            picture.src = formatImageBase64Source(response['pictureBase64Src']);
         }
 
         function onFailure(xhr, xhrStatus) {
@@ -168,11 +248,8 @@
         }
 
         const headers = [];
-        const body = null;
-        console.log(bioInput);
-        console.log(bioInput.value);
-        const params = `name=${nameInput.textContent}&dob=${dobInput.value}&gender=${genderInput.textContent}&bio=${bioInput.textContent}&interests=${interestsInput.value}`;
-
+        const body = new FormData(editForm);
+        const params = `interests=${selectedInterests.join(',')}`;
 
         REST(`/api/updateProfile?${params}`, 'POST', true, 0, headers, body, onSuccess, onFailure);
 
@@ -183,10 +260,7 @@
         window.location.replace('/dashboard.html');
     });
 
-    document.getElementById('submitBtn').addEventListener('click', function(e) {
-        onSaveSubmit();
-    });
+    editForm.addEventListener('submit', onSubmit);
 
-    onEditSubmit();
+    fetchInterests();
 </script>
-

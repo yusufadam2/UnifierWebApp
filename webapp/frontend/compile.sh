@@ -25,4 +25,4 @@ mkdir ${OUT}/js && cp -r js/* ${OUT}/js
 cp -r public/* ${OUT}
 
 ## clean unnecessary files
-rm -rf ${OUT}/layouts
+rm -rf ${OUT}/layouts ${OUT}/html
