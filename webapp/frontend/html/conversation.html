@@ -93,8 +93,7 @@ button:hover {
         <button class="col-2" id="chatExit">
             Leave
         </button>
-        <textarea class="col-8" id="chatMsgInput" placeholder="Enter a message...">
-        </textarea>
+        <textarea class="col-8" id="chatMsgInput" placeholder="Enter a message..."></textarea>
         <button class="col-2" id="chatMsgSubmit">
             Send
         </button>
@@ -208,9 +207,7 @@ button:hover {
 
     const quitButton = document.getElementById('chatExit');
     quitButton.addEventListener('click', function(e) {
-        function onSuccess(xhr, xhrResponse, xhrResponseType) {
-            window.location.replace('/index.html')
-        }
+        window.location.replace('/dashboard.html');
     });
 
     const messageSource = document.getElementById('chatMsgInput');

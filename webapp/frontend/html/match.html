@@ -89,7 +89,7 @@
                         <img id="matchImage" src="test.png" class="active img-fluid" alt="match profile picture" />
                     </div>
                     <div class="col">
-                        <h4><span id="matchName"></span> (<span id="matchScore"></span> score)</h4>
+                        <h4><span id="matchName"></span></h4>
                         <div id="matchBio" class="form-row boxed my-3 p-4">
                         </div>
                         <div class="form-row">
@@ -118,20 +118,21 @@
                 const uid = matchedUser['uid'];
                 const userScore = matchedUser['score'];
 
+                const matchListItem = matchTemplate.content.firstElementChild.cloneNode(true);
+                matchList.appendChild(matchListItem);
+
                 function onSuccess(xhr, xhrResponse, xhrResponseType) {
                     const response = JSON.parse(xhrResponse);
                     console.log(response);
 
-                    const matchListItem = matchTemplate.content.firstElementChild.cloneNode(true);
-
                     const matchImage = matchListItem.querySelector('#matchImage');
                     const matchName = matchListItem.querySelector('#matchName');
-                    const matchScore = matchListItem.querySelector('#matchScore');
+//                    const matchScore = matchListItem.querySelector('#matchScore');
                     const matchBio = matchListItem.querySelector('#matchBio');
 
-                    matchImage.src = response['picture'];
+                    matchImage.src = formatImageBase64Source(response['pictureBase64Src']);
                     matchName.innerHTML = response['username'];
-                    matchScore.innerHTML = userScore;
+//                    matchScore.innerHTML = userScore;
                     matchBio.innerHTML = response['biography'];
 
                     const matchAccept = matchListItem.querySelector('#matchAcceptBtn');
@@ -159,8 +160,6 @@
                         console.log(matchListItem);
                         matchListItem.style = 'display: none;';
                     });
-
-                    matchList.appendChild(matchListItem);
                 }
 
                 function onFailure(xhr, xhrStatus) {

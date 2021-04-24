@@ -1,3 +1,5 @@
+import base64
+import datetime
 import os
 
 import conversation
@@ -5,7 +7,7 @@ import crypto
 import sqldb
 import matching
 
-import datetime
+from typing import Optional
 
 from flask import abort, jsonify, request, Flask, session, redirect, url_for
 from flask_session import Session
@@ -32,45 +34,47 @@ SECRET_KEY = b'\x11\xe7\x18\xbd\xf1\xban&a\x9ap\xa5\xdbc\xb2\xfa'
 
 app.config.from_object(__name__)
 #app.config['CORS_HEADERS'] = 'Content-Type'
+app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024 # limit requests to 2 MiB
 sess = Session()
 
 
 @app.route('/')
-#@cross_origin()
 def main():
     return app.send_static_file('index.html')
 
 
 # TODO(mikolaj): implement csrf protection
-# TODO(daim): implement registration REST end point
 @app.route('/api/register', methods=['POST'])
 def register():
     conn = sqldb.try_open_conn()
     assert conn is not None
     cur = conn.cursor()
 
-    email = request.values.get('email', None)
-    username = request.values.get('username', None)
-    password = request.values.get('password', None)
+    email = request.values.get('email')
+    dob = request.values.get('dob')
+    username = request.values.get('username')
+    password = request.values.get('password')
 
-    if email is None or username is None or password is None:
+    if email is None or dob is None or username is None or password is None:
         return app.response_class(status=400)
 
     query = 'SELECT * FROM UserAuth WHERE username LIKE ? OR email LIKE ?;'
     parameters = (username, email)
     existing_user = sqldb.do_sql(cur, query, parameters)
 
-    if existing_user is not None:
-        print(f'Username/email already exists!')
+    if existing_user is not None and len(existing_user) > 0:
         return app.response_class(status=400)
 
-    print(f'Registering user: {username} ({email}) with password {password}')
+    query = 'INSERT INTO Users (name, dob, pictureId) VALUES (?,?,?);'
+    parameters = (username, dob, sqldb.DEFAULT_PICTURE_ID)
+    sqldb.do_sql(cur, query, parameters)
+    uid = cur.lastrowid
 
-    query = 'INSERT INTO UserAuth (username, email, hash, salt) VALUES (?,?,?,?,?);'
-    parameters = (username, email, *crypto.hash_secret(password))
+    query = 'INSERT INTO UserAuth (username, email, hash, salt, userId) VALUES (?,?,?,?,?);'
+    parameters = (username, email, *crypto.hash_secret(password), uid)
     sqldb.do_sql(cur, query, parameters)
 
-    print(f'Succesfuly registered user: {username} ({email})')
+    conn.commit()
 
     return app.response_class(status=200)
 
@@ -91,6 +95,8 @@ def login():
     query = 'SELECT userId, hash, salt FROM UserAuth WHERE username LIKE ?;'
     parameters = (username,)
     matching_users = sqldb.do_sql(cur, query, parameters)
+
+    print(matching_users)
 
     for uid, user_hash, user_salt in matching_users:
         if crypto.verify_secret(password, user_hash, user_salt):
@@ -113,25 +119,20 @@ def logout():
     return app.response_class(status=200, headers={'Clear-Site-Data': '"*", "cookies"'})
 
 
-@app.route('/api/readProfile', methods=['GET'])
-def read_profile():
-    conn = sqldb.try_open_conn()
-    assert conn is not None
-    cur = conn.cursor()
-
-    # take the uid provided in the request, falling back to the session uid
-    uid = request.values.get('uid', session.get('uid'))
-
-    query = '''SELECT * FROM Users
-    WHERE id LIKE ?;'''
+def load_user_profile(cur, uid) -> Optional:
+    query = 'SELECT * FROM Users WHERE id LIKE ?;'
     parameters = (uid,)
-    user_profile = sqldb.do_sql(cur, query, parameters)[0]
-    uid, name, dob, gender, bio, picture_id = user_profile
+    user_profile = sqldb.do_sql(cur, query, parameters)
 
-    query = '''SELECT data FROM UserPictures
-    WHERE id LIKE ?;'''
+    if user_profile is None or len(user_profile) == 0:
+        return None
+
+    uid, name, dob, gender, bio, picture_id = user_profile[0]
+
+    query = 'SELECT data FROM UserPictures WHERE id LIKE ?;'
     parameters = (picture_id,)
     picture = sqldb.do_sql(cur, query, parameters)[0][0]
+    picture_base64_bytes = base64.b64encode(picture)
 
     query = '''SELECT interestId FROM UsersInterestsJoin 
     INNER JOIN Users ON UsersInterestsJoin.userId = Users.id 
@@ -145,18 +146,34 @@ def read_profile():
     for idx, interest in enumerate(interests):
         interest_names[idx] = sqldb.do_sql(cur, query, interest)[0][0]
 
+    return uid, name, dob, gender, bio, picture_base64_bytes, interest_names
+
+
+@app.route('/api/readProfile', methods=['GET'])
+def read_profile():
+    conn = sqldb.try_open_conn()
+    assert conn is not None
+    cur = conn.cursor()
+
+    # take the uid provided in the request, falling back to the session uid
+    uid = request.values.get('uid', session.get('uid'))
+
+    if (user_profile := load_user_profile(cur, uid)) is None:
+        return app.response_class(status=400)
+
+    uid, name, dob, gender, bio, picture_base64_bytes, interest_names = user_profile
+
     return jsonify({
         'uid': uid,
         'username': name,
         'dob': dob,
         'gender': gender,
         'biography': bio,
-        'picture': 1,
+        'pictureBase64Src': picture_base64_bytes.decode('utf-8'),
         'interests': interest_names,
     })
 
 
-#update interests left to do
 @app.route('/api/updateProfile', methods=['POST'])
 def update_profile():
     conn = sqldb.try_open_conn()
@@ -164,64 +181,88 @@ def update_profile():
     cur = conn.cursor()
 
     uid = session.get('uid')
+
+    print(request.values)
+    print(request.files)
+
     name = request.values.get('name')
     dob = request.values.get('dob')
     interests = request.values.get('interests')
     biography = request.values.get('biography')
     gender = request.values.get('gender')
-    profilePicture = request.values.get('profilePicture')
 
-    print(request.values)
+    picture = request.files.get('profilePictureUpload').read()
 
-    interests_list = interests.split(',')
+    if load_user_profile(cur, uid) is None:
+        return app.response_class(status=400)
 
-    query = '''SELECT * FROM Users
-    WHERE id LIKE ?;'''
-    parameters = (uid,)
+    query = 'UPDATE Users SET bio = ?, gender = ? WHERE id LIKE ?;'
+    parameters = (biography, gender, uid)
+    sqldb.do_sql(cur, query, parameters)
+    
+    if picture != b'':
+        query = 'SELECT pictureId FROM Users WHERE id LIKE ?;'
+        parameters = (uid,)
+        picture_id = sqldb.do_sql(cur, query, parameters)[0][0]
 
-    user_exist = sqldb.do_sql(cur, query, parameters)
+        if picture_id == sqldb.DEFAULT_PICTURE_ID:
+            query = 'INSERT INTO UserPictures (data) VALUES (?);'
+            parameters = (picture,)
+            sqldb.do_sql(cur, query, parameters)
 
-    if user_exist is None:
-#        query = '''INSERT INTO UserPictures(data) VALUES (?);'''
-#        parameters = ('',)
-#        sqldb.do_sql(cur, query, parameters)
-#        picture_id = cur.lastrowindex
+            new_picture_id = cur.lastrowid
 
-        query = '''INSERT INTO Users (id, name, dob, gender, bio, pictureId) 
-        VALUES (?,?,?,?,?,?);'''
-        parameters = (uid, name, dob, gender, biography, 1)
-        sqldb.do_sql(cur, query, parameters)
+            query = 'UPDATE Users SET pictureId = ? WHERE id LIKE ?;'
+            parameters = (new_picture_id, uid)
+            sqldb.do_sql(cur, query, parameters)
+        else:
+            query = 'UPDATE UserPictures SET data = ? WHERE id LIKE ?;'
+            parameters = (picture, picture_id)
+            result = sqldb.do_sql(cur, query, parameters)
 
-        for interest in interests_list:
-            interest_id = sqldb.get_interest_id(interest)
-            query_interest = 'INSERT INTO UsersInterestsJoin (userId, interestId) VALUES (?,?);'
-            do_sql(cur, query_interest, (uid, interest_id))
+    if interests is not None and interests != '':
+        interest_names = set(interests.split(','))
+        interest_ids = set()
 
-    else: 
-        query = '''UPDATE Users SET bio = ?, gender = ? WHERE id LIKE ?;'''
-        parameters = (biography, gender, uid)
-        sqldb.do_sql(cur, query, parameters)
+        query = 'SELECT id FROM Interests WHERE name LIKE ?;'
+        for name in interest_names:
+            i = sqldb.do_sql(cur, query, (name,))
+            if i is not None and len(i) == 1:
+                interest_ids.add(i[0][0])
 
-#        query = '''SELECT pictureId FROM Users WHERE id LIKE ?;'''
-#        parameters = (uid,)
-#        picture_id = sqldb.do_sql(cur, query, parameters)
+        query = 'SELECT interestId FROM UsersInterestsJoin WHERE userId LIKE ?;'
+        existing_interests = sqldb.do_sql(cur, query, (uid,))
+        existing_interests = set([x[0] for x in existing_interests])
 
-#        query = '''UPDATE UserPictures
-#        SET data = ?
-#        WHERE id LIKE ?;'''
-#        parameters = (profilePicture, picture_id)
-#        cur.execute(query, parameters)
+        added_interests = interest_ids.difference(existing_interests)
+        removed_interests = existing_interests.difference(interest_ids)
 
-#        for interest in interests_list:
-#            interest_id = sqldb.get_interest_id(interest)
-#            existing_interests = do_sql(cur, 'SELECT interestId FROM UsersInterestsJoin WHERE userId LIKE ?;', (uid,))
-#            if (interest in existing_interests):
-#                continue;
-#            else:
-#                query_interest = 'INSERT INTO UsersInterestsJoin (userId, interestId) VALUES (?,?);'
-#                do_sql(cur, query_interest, (uid, interest_id))
+        for interest_id in added_interests:
+            query = 'INSERT INTO UsersInterestsJoin (userId, interestId) VALUES (?,?);'
+            sqldb.do_sql(cur, query, (uid, interest_id))
 
-    return app.response_class(status=200)
+        for interest_id in removed_interests:
+            query = 'DELETE FROM UsersInterestsJoin WHERE userId LIKE ? AND interestId LIKE ?;'
+            sqldb.do_sql(cur, query, (uid, interest_id))
+
+    elif interests is not None and interests == '':
+        query = 'DELETE FROM UsersInterestsJoin WHERE userId LIKE ?;'
+        sqldb.do_sql(cur, query, (uid,))
+
+    conn.commit()
+
+    # return the newly updated user profile
+    uid, name, dob, gender, bio, picture_base64_bytes, interest_names = load_user_profile(cur, uid) 
+
+    return jsonify({
+        'uid': uid,
+        'username': name,
+        'dob': dob,
+        'gender': gender,
+        'biography': bio,
+        'pictureBase64Src': picture_base64_bytes.decode('utf-8'),
+        'interests': interest_names,
+    })
 
 
 @app.route('/api/startConversation', methods=['POST'])
@@ -233,40 +274,35 @@ def start_conversation():
     uid = session.get('uid')
     other_uid = request.values.get('other')
 
-    query = '''SELECT userId, conversationId FROM UsersConversationsJoin
-    WHERE userId LIKE ?;'''
-    parameters = (other_uid,)
+    query = '''SELECT a.conversationId FROM UsersConversationsJoin a
+    INNER JOIN UsersConversationsJoin b ON a.conversationId = b.conversationId
+    WHERE a.userId LIKE ? AND b.userId LIKE ?;'''
+    parameters = (uid, other_uid)
     result = sqldb.do_sql(cur, query, parameters)
 
-    if result is None or len(result) == 0:
-        query = '''INSERT INTO Conversations (fpath) 
-        VALUES (?);'''
-        parameters = ('',)
-        sqldb.do_sql(cur, query, parameters)
-        cid = cur.lastrowid
-
-        new_fpath = f'{CONVERSATION_ROOT}/{cid}'
-
-        query = '''UPDATE Conversations
-        SET fpath = ?
-        WHERE id = ?;'''
-        parameters = (new_fpath, cid)
-        sqldb.do_sql(cur, query, parameters)
-
-        query = '''INSERT INTO UsersConversationsJoin (userId, conversationId) 
-        VALUES (?,?);'''
-        sqldb.do_sql(cur, query, (uid, cid))
-        sqldb.do_sql(cur, query, (other_uid, cid))
-
-        conn.commit()
-
-        session['cid'] = cid
-        
+    if result is not None and len(result) > 0:
+        session['cid'] = result[0][0]
         return app.response_class(status=200)
 
-    session['cid'] = result[0][1]
-    print(session['cid'])
+    query = 'INSERT INTO Conversations (fpath) VALUES (?);'
+    parameters = ('',)
+    sqldb.do_sql(cur, query, parameters)
+    cid = cur.lastrowid
 
+    new_fpath = f'{CONVERSATION_ROOT}/{cid}'
+
+    query = 'UPDATE Conversations SET fpath = ? WHERE id = ?;'
+    parameters = (new_fpath, cid)
+    sqldb.do_sql(cur, query, parameters)
+
+    query = '''INSERT INTO UsersConversationsJoin (userId, conversationId) 
+    VALUES (?,?);'''
+    sqldb.do_sql(cur, query, (uid, cid))
+    sqldb.do_sql(cur, query, (other_uid, cid))
+
+    conn.commit()
+
+    session['cid'] = cid
     return app.response_class(status=200)
 
 
@@ -317,7 +353,6 @@ def fetch_messages():
     from_time = request.values.get('fromTime')
 
     query = '''SELECT fpath FROM UsersConversationsJoin 
-    INNER JOIN Users ON UsersConversationsJoin.userId = Users.id 
     INNER JOIN Conversations ON UsersConversationsJoin.conversationId = Conversations.id
     WHERE userId LIKE ? AND conversationId LIKE ?;'''
     parameters = (uid, cid)
@@ -347,10 +382,18 @@ def fetch_all_interests():
     assert conn is not None
     cur = conn.cursor()
 
-    query = '''SELECT name FROM Interests;'''
-    all_interests = sqldb.do_sql(cur, query)
+    query = '''SELECT InterestCategories.name, Interests.name FROM InterestCategories
+    INNER JOIN Interests ON Interests.categoryId = InterestCategories.id
+    ORDER BY InterestCategories.name;'''
+    results = sqldb.do_sql(cur, query)
 
-    return jsonify([tup[0] for tup in all_interests])
+    interests = dict()
+    for category, interest in results:
+        prev = interests.get(category, [])
+        prev.append(interest)
+        interests[category] = prev
+
+    return jsonify(interests)
 
 
 @app.route('/api/friends', methods = ['GET'])

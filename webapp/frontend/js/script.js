@@ -4,6 +4,10 @@ function hasCookie(key) {
   });
 }
 
+function formatImageBase64Source(base64) {
+  return `data:image/png;charset=utf-8;base64,${base64}`;
+}
+
 // constants
 const SESSION_COOKIE = 'unifier-session';
 const LOGIN_NAV_LINK_ID = 'loginNavLink';

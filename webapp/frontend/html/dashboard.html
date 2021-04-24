@@ -56,16 +56,12 @@
                     <small><a href="/edit.html">Edit</a></small>
                 </div>
                 <ul class="list-group list-group-flush">
-                    <li class="list-group-item"><img id="bioImg" src="/profile-picture-test.png"
-                            class="img-thumbnail profilepicture" alt="test profile picture"></li>
+                    <li class="list-group-item">
+                        <img id="profilePicture" src="/default-profile.png" class="img-thumbnail profilepicture" alt="Profile Picture">
+                    </li>
                     <li class="list-group-item">
                         <h3>Description:</h3>
-                        <p id="bioPar">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-                            tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-                            quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-                            consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
-                            cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
-                            proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+                        <p id="biography"></p>
                     </li>
                 </ul>
             </div>
@@ -79,7 +75,7 @@
                 <ul class="list-group list-group-flush" id="friendList">
                     <li id="noFriendMessage" class="list-group-item" style="display: none;">
                         <div class="d-flex justify-content-evenly">
-                            <img src="/friend-1.png" class="flex-shrink-0 mr-3 mt-3 rounded-circle"
+                            <img src="/default-friend.png" class="flex-shrink-0 mr-3 mt-3 rounded-circle"
                                 style="width: 60px;height:60px;">
                             <div class="d-flex align-items-center">
                                 <a href="/match.html" class="align-self-center profile-link online">
@@ -109,8 +105,8 @@
     </div>
 </div>
 <script>
-    const profileBio = document.getElementById('bioPar');
-    const profileImage = document.getElementById('bioImg');
+    const profileBio = document.getElementById('biography');
+    const profileImage = document.getElementById('profilePicture');
 
     function fetchProfile() {
         function onSuccess(xhr, xhrResponse, xhrResponseType) {
@@ -118,7 +114,7 @@
 
             const response = JSON.parse(xhrResponse);
             profileBio.innerHTML = response['biography'];
-            profileImage.src = response['picture'];
+            profileImage.src = formatImageBase64Source(response['pictureBase64Src']);
         }
 
         function onFailure(xhr, xhrStatus) {
@@ -158,7 +154,7 @@
                     const profilePicture = friend.querySelector('#profilePicture');
                     const conversationLink = friend.querySelector('#conversationLink');
 
-                    profilePicture.src = response['picture'];
+                    profilePicture.src = formatImageBase64Source(response['pictureBase64Src']);
 
                     conversationLink.innerHTML = response['username'];
                     conversationLink.addEventListener('click', function(e) {

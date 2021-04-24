@@ -3,7 +3,8 @@ This module provides a helper function for executing sql queries.
 """
 
 __all__ = [
-        'DB', 'NAME_LEN', 'DESC_LEN', 'HASH_LEN', 'SALT_LEN', 'PATH_LEN',
+        'DB', 'DEFAULT_PICTURE_ID', 'NAME_LEN', 'DESC_LEN', 'HASH_LEN', 
+        'SALT_LEN', 'PATH_LEN',
         'close_conn', 'do_sql', 'try_open_conn'
 ]
 
@@ -31,6 +32,7 @@ HASH_LEN = crypto.CRYPTO_HASH_LEN
 SALT_LEN = crypto.CRYPTO_SALT_LEN
 PATH_LEN = 256
 
+DEFAULT_PICTURE_ID = 1
 
 def close_conn(conn: sql.Connection):
     """
@@ -138,8 +140,8 @@ def bootstrap():
     with open(default_picture_fpath, 'rb') as default_picture_file:
         default_picture_blob = default_picture_file.read()
 
-        CREATE_USER_PICTURE_QUERY = 'INSERT INTO UserPictures (data) VALUES (?);'
-        do_sql(cur, CREATE_USER_PICTURE_QUERY, (default_picture_blob,))
+        CREATE_USER_PICTURE_QUERY = 'INSERT INTO UserPictures (id, data) VALUES (?,?);'
+        do_sql(cur, CREATE_USER_PICTURE_QUERY, (DEFAULT_PICTURE_ID, default_picture_blob))
 
     CREATE_USER_QUERY = 'INSERT INTO Users (name, dob, pictureId) VALUES (?,?,?);'
     do_sql(cur, CREATE_USER_QUERY, ('John Doe', datetime.now(), 1))
